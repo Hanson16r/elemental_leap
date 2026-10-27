@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/platform.gd" id="1_platform"]
+
+[node name="Platform" type="AnimatableBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_platform")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-100, -12, 100, -12, 100, 12, -100, 12)
+color = Color(0.42, 0.55, 0.72, 1)
+
+[node name="Top" type="Line2D" parent="."]
+points = PackedVector2Array(-100, -12, 100, -12)
+width = 2.0
+default_color = Color(0.75, 0.9, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]

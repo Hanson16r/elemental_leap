@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/hazards/flame.gd" id="1_flame"]
+
+[node name="Flame" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+monitoring = true
+script = ExtResource("1_flame")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.2, 0.7, 1, 0.95)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]

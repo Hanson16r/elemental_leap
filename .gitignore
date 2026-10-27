@@ -1,0 +1,20 @@
+# Godot 引擎缓存（打开项目会自动重建，不要提交）
+.godot/
+
+# 导出产物（体积大，提交源码 + 导出预设就够了）
+build/
+*.exe
+*.pck
+*.zip
+
+# 本地临时目录（跑无窗口测试时重定向 APPDATA 用的）
+.tmp_appdata/
+
+# 日志 / 系统文件
+*.log
+Thumbs.db
+.DS_Store
+
+# 编辑器备份
+*.tmp
+*~

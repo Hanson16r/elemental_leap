@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/hazards/blink_platform.gd" id="1_blink"]
+
+[node name="BlinkPlatform" type="AnimatableBody2D"]
+collision_layer = 1
+collision_mask = 0
+sync_to_physics = true
+script = ExtResource("1_blink")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-80, -11, 80, -11, 80, 11, -80, 11)
+color = Color(0.6, 0.85, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]

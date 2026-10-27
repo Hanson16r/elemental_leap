@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/fire_shooter.gd" id="1_fs"]
+[ext_resource type="Texture2D" path="res://scripts/enemies/6元素史莱姆.png" id="2_slime"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f0"]
+atlas = ExtResource("2_slime")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f1"]
+atlas = ExtResource("2_slime")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_f2"]
+atlas = ExtResource("2_slime")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shooter"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f2")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 8.0
+}]
+
+[node name="FireShooter" type="Area2D"]
+script = ExtResource("1_fs")
+
+[node name="Slime" type="AnimatedSprite2D" parent="."]
+scale = Vector2(1.2, 1.2)
+offset = Vector2(0, -7.3)
+sprite_frames = SubResource("SpriteFrames_shooter")
+animation = &"walk"
+autoplay = "walk"

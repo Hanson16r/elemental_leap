@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/level_complete.gd" id="1_complete"]
+
+[node name="LevelComplete" type="CanvasLayer"]
+process_mode = 3
+layer = 60
+script = ExtResource("1_complete")
+
+[node name="Root" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.04, 0.08, 0.82)
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -210.0
+offset_right = 230.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Box" type="VBoxContainer" parent="Root/Panel"]
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/Panel/Box"]
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.8, 0.94, 1, 1)
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Time" type="Label" parent="Root/Panel/Box"]
+theme_override_font_sizes/font_size = 26
+text = ""
+horizontal_alignment = 1
+
+[node name="Deaths" type="Label" parent="Root/Panel/Box"]
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.8, 0.92, 1)
+text = ""
+horizontal_alignment = 1
+
+[node name="Best" type="Label" parent="Root/Panel/Box"]
+theme_override_font_sizes/font_size = 19
+text = ""
+horizontal_alignment = 1
+
+[node name="AllDone" type="Label" parent="Root/Panel/Box"]
+visible = false
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.55, 1, 0.85, 1)
+text = "三关全部通关，谢谢试玩！"
+horizontal_alignment = 1
+
+[node name="Gap" type="Control" parent="Root/Panel/Box"]
+custom_minimum_size = Vector2(0, 14)
+
+[node name="NextButton" type="Button" parent="Root/Panel/Box"]
+custom_minimum_size = Vector2(0, 46)
+theme_override_font_sizes/font_size = 21
+text = "进入下一关"
+
+[node name="RetryButton" type="Button" parent="Root/Panel/Box"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_font_sizes/font_size = 20
+text = "再玩一次本关"
+
+[node name="MenuButton" type="Button" parent="Root/Panel/Box"]
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "回到主菜单"

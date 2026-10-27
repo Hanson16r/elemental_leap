@@ -1,0 +1,152 @@
+﻿Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Godot_v4.7.2-stable_win64_console.exe : ERROR: Failed to read the root certificate store.
+所在位置 行:1 字符: 252
++ ... | Out-Null; & "..\Godot\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-st ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: Failed t...tificate store.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+
+================= 关卡可达性检查 =================
+（player.gd: 起跳 -480  重力 1250  下落倍率 1.35  速度 240  空中加速比 0.50）
+  规律：平跳能跨最远；要上升时能跨的距离会变小，但不会掉到个位数。
+  旧版工具把'爬到该高度的最早时刻'当成'最晚时刻'，算出的表只有真实值的一半左右，
+  所以以前的关卡被压得过密。现在按完整抛物线算：平跳约 146，升 30 约 134。
+
+  能力表（本工具自己算出，关卡必须照它设计）：
+    需要的上升 → 能跨的最远空隙
+     0→146 10→142 20→138 30→134 40→129 50→124 60→118 70→111 80→103
+    （已经打了 0.85 的安全系数，实际还能再宽松一点）
+
+--- res://scenes/levels/level_1.tscn ---
+  共 4 个落脚面
+    #0  顶面 780  x -100 ~400    platform
+    #1  顶面 780  x 500  ~900    platform
+    #2  顶面 780  x 1000 ~1800   platform
+    #3  顶面 780  x 1900 ~2700   platform
+  从出生点可达 4 / 4 个落脚面：#0, #1, #2, #3
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_2.tscn ---
+  共 7 个落脚面
+    #0  顶面 780  x -100 ~400    platform
+    #1  顶面 780  x 900  ~1400   platform
+    #2  顶面 780  x 1800 ~2800   platform
+    #3  顶面 769  x 450  ~610    mover#3@A(最左/最低)
+    #4  顶面 769  x 690  ~850    mover#3@B(最右/最高)
+    #5  顶面 769  x 1400 ~1560   mover#5@A(最左/最低)
+    #6  顶面 769  x 1640 ~1800   mover#5@B(最右/最高)
+  从出生点可达 7 / 7 个落脚面：#0, #3, #4, #1, #5, #6, #2
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_3.tscn ---
+  共 3 个落脚面
+    #0  顶面 780  x -100 ~600    platform
+    #1  顶面 780  x 700  ~1400   platform
+    #2  顶面 780  x 1500 ~2600   platform
+  从出生点可达 3 / 3 个落脚面：#0, #1, #2
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_4.tscn ---
+  共 4 个落脚面
+    #0  顶面 780  x -100 ~400    platform
+    #1  顶面 780  x 400  ~1000   ice_slide（需冰冻）
+    #2  顶面 780  x 1000 ~1500   platform
+    #3  顶面 780  x 1600 ~2600   platform
+  从出生点可达 4 / 4 个落脚面：#0, #1, #2, #3
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_5.tscn ---
+  共 8 个落脚面
+    #0  顶面 780  x -100 ~500    platform
+    #1  顶面 780  x 800  ~1200   platform
+    #2  顶面 780  x 1330 ~2000   platform
+    #3  顶面 780  x 2300 ~2800   platform
+    #4  顶面 769  x 450  ~610    mover#4@A(最左/最低)
+    #5  顶面 769  x 690  ~850    mover#4@B(最右/最高)
+    #6  顶面 769  x 1950 ~2110   mover#6@A(最左/最低)
+    #7  顶面 769  x 2190 ~2350   mover#6@B(最右/最高)
+  从出生点可达 8 / 8 个落脚面：#0, #4, #5, #1, #2, #6, #7, #3
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_6.tscn ---
+  共 5 个落脚面
+    #0  顶面 780  x -100 ~600    platform
+    #1  顶面 780  x 700  ~1300   platform
+    #2  顶面 780  x 1400 ~2200   platform
+    #3  顶面 780  x 2300 ~2800   platform
+    #4  顶面 720  x 1410 ~1590   rock_pillar（需岩石）
+  从出生点可达 5 / 5 个落脚面：#0, #1, #2, #4, #3
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_7.tscn ---
+  共 4 个落脚面
+    #0  顶面 780  x -100 ~700    platform
+    #1  顶面 780  x 800  ~1400   platform
+    #2  顶面 780  x 1500 ~2200   platform
+    #3  顶面 780  x 2300 ~2800   platform
+  从出生点可达 4 / 4 个落脚面：#0, #1, #2, #3
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_8.tscn ---
+  共 6 个落脚面
+    #0  顶面 780  x -100 ~600    platform
+    #1  顶面 780  x 500  ~1000   platform
+    #2  顶面 780  x 1100 ~1600   platform
+    #3  顶面 780  x 1700 ~2400   platform
+    #4  顶面 780  x 2500 ~3000   platform
+    #5  顶面 780  x 500  ~700    ice_slide（需冰冻）
+  从出生点可达 6 / 6 个落脚面：#0, #1, #5, #2, #3, #4
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_10.tscn ---
+  共 6 个落脚面
+    #0  顶面 780  x -100 ~500    platform
+    #1  顶面 780  x 600  ~1200   platform
+    #2  顶面 780  x 1300 ~2000   platform
+    #3  顶面 780  x 2100 ~2800   platform
+    #4  顶面 780  x 2900 ~3400   platform
+    #5  顶面 780  x 450  ~750    ice_slide（需冰冻）
+  从出生点可达 6 / 6 个落脚面：#0, #1, #5, #2, #3, #4
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_11.tscn ---
+  共 6 个落脚面
+    #0  顶面 520  x -100 ~400    platform
+    #1  顶面 520  x 500  ~950    platform
+    #2  顶面 520  x 950  ~1250   ice_slide（需冰冻）
+    #3  顶面 780  x 400  ~1400   platform
+    #4  顶面 780  x 1300 ~1800   platform
+    #5  顶面 780  x 1900 ~2300   platform
+  从出生点可达 6 / 6 个落脚面：#0, #1, #3, #2, #4, #5
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_12.tscn ---
+  共 6 个落脚面
+    #0  顶面 780  x 0    ~1200   platform
+    #1  顶面 780  x 1140 ~1260   mover#1@A(最左/最低)
+    #2  顶面 600  x 1140 ~1260   mover#1@B(最右/最高)
+    #3  顶面 560  x 1300 ~1700   platform
+    #4  顶面 560  x 1600 ~1900   platform
+    #5  顶面 780  x 1900 ~2400   platform
+  从出生点可达 6 / 6 个落脚面：#0, #1, #2, #3, #4, #5
+  ok    终点旗有可达的落脚面
+
+--- res://scenes/levels/level_13.tscn ---
+  共 3 个落脚面
+    #0  顶面 780  x 100  ~1700   platform
+    #1  顶面 780  x 1800 ~2200   platform
+    #2  顶面 640  x 700  ~1300   platform
+  从出生点可达 2 / 3 个落脚面：#0, #1
+    WARN  #0（platform）头顶被 #2（platform）压住：净空只有 100 < 189，在这里起跳会撞头
+    WARN  共 1 处净空不足（不判失败：低天花板不一定挡主线，但玩家在这里跳会撞头）
+    跳不过去 #0 → #2：需要上升 140 像素，超过摸高 92，跳不上去
+    跳不过去 #1 → #2：需要上升 140 像素，超过摸高 92，跳不上去
+    [dbg] 摸高=92.2  平跳上限=145.8  上升30上限=133.7
+    [dbg] #2 最近可达面 #0：空隙 0 上升 140 → 需要上升 140 像素，超过摸高 92，跳不上去
+  ok    终点旗有可达的落脚面
+
+>>> OK 全部关卡都从出生点走得到终点。
+================================================
