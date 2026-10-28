@@ -29,6 +29,16 @@ extends Area2D
 ## 相位（0~1 个周期），用来错开多个喷口
 @export var phase: float = 0.0
 
+# ---- 触发模式（2026-10-28 为第 13 关加）----
+## true = 不走固定周期，由压力板等外部信号调用 press() / release() 控制
+@export var triggered: bool = false
+## 踩下后多久着火
+@export var trigger_delay: float = 2.0
+## 着火持续多久
+@export var burn_time: float = 1.5
+## 离开压力板后多久重新待机（这期间再踩也没用）
+@export var reset_time: float = 3.0
+
 var _t: float = 0.0
 var _shape: CollisionShape2D
 var _flame: Polygon2D
@@ -36,6 +46,11 @@ var _core: Polygon2D
 var _lamp: Polygon2D
 var _particles: CPUParticles2D
 var _burning: bool = false
+
+# 触发模式的状态机：0 待机 / 1 蓄势 / 2 燃烧 / 3 冷却
+var _tstate: int = 0
+var _state_timer: float = 0.0
+var _on_plate: bool = false
 
 
 func _ready() -> void:
@@ -120,25 +135,89 @@ func _ready() -> void:
 
 	body_entered.connect(_on_body_entered)
 
-	var cycle := off_time + warn_time + on_time
-	_t = fmod(phase * cycle, cycle)
-	_update_state()
+	if triggered:
+		_tstate = 0
+		_state_timer = 0.0
+		_set_burning(false)
+		_lamp.color = Color(0.35, 0.35, 0.4)
+	else:
+		var cycle := off_time + warn_time + on_time
+		_t = fmod(phase * cycle, cycle)
+		_update_state()
 
 
 func _process(delta: float) -> void:
-	var cycle := off_time + warn_time + on_time
-	_t = fmod(_t + delta, cycle)
-	_update_state()
+	if triggered:
+		_process_triggered(delta)
+	else:
+		var cycle := off_time + warn_time + on_time
+		_t = fmod(_t + delta, cycle)
+		_update_state()
+
+	var wobble_t := _state_timer if triggered else _t
 
 	# 着火时火焰左右抖，预警时灯闪
 	if _burning:
-		_flame.scale.x = 1.0 + sin(_t * 38.0) * 0.10
-		_core.scale.x = 1.0 + sin(_t * 46.0) * 0.14
-	elif _t >= off_time and _t < off_time + warn_time:
+		_flame.scale.x = 1.0 + sin(wobble_t * 38.0) * 0.10
+		_core.scale.x = 1.0 + sin(wobble_t * 46.0) * 0.14
+	elif not triggered and _t >= off_time and _t < off_time + warn_time:
 		var blink := 0.55 + 0.45 * sin(_t * 60.0)
 		_lamp.modulate.a = blink
-	else:
+	elif not triggered:
 		_lamp.modulate.a = 1.0
+
+
+## 触发模式的状态机：待机 → 蓄势 → 燃烧 → 冷却 → 待机
+func _process_triggered(delta: float) -> void:
+	match _tstate:
+		0:
+			_lamp.color = Color(0.35, 0.35, 0.4)
+			_lamp.modulate.a = 1.0
+		1:
+			_state_timer += delta
+			_lamp.color = Color(1.0, 0.25, 0.18)
+			_lamp.modulate.a = 0.55 + 0.45 * sin(_state_timer * 24.0)
+			if _state_timer >= trigger_delay:
+				_tstate = 2
+				_state_timer = 0.0
+				_set_burning(true)
+		2:
+			_state_timer += delta
+			_lamp.color = Color(1.0, 0.8, 0.3)
+			_lamp.modulate.a = 1.0
+			if _state_timer >= burn_time:
+				_tstate = 3
+				_state_timer = 0.0
+				_set_burning(false)
+		3:
+			_lamp.color = Color(0.35, 0.35, 0.4)
+			_lamp.modulate.a = 1.0
+			# 必须"离开压力板"才开始计时，玩家一直站着不会重置
+			if not _on_plate:
+				_state_timer += delta
+				if _state_timer >= reset_time:
+					_tstate = 0
+					_state_timer = 0.0
+
+
+## 压力板踩下：待机状态下开始蓄势
+func press() -> void:
+	if not triggered:
+		return
+	_on_plate = true
+	if _tstate == 0:
+		_tstate = 1
+		_state_timer = 0.0
+		Sfx.play_click()
+
+
+## 压力板松开：冷却阶段重新开始计"离开时间"
+func release() -> void:
+	if not triggered:
+		return
+	_on_plate = false
+	if _tstate == 3:
+		_state_timer = 0.0
 
 
 func _update_state() -> void:
@@ -191,6 +270,14 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 func reset_hazard() -> void:
+	if triggered:
+		_tstate = 0
+		_state_timer = 0.0
+		_on_plate = false
+		_set_burning(false)
+		_lamp.color = Color(0.35, 0.35, 0.4)
+		_lamp.modulate.a = 1.0
+		return
 	var cycle := off_time + warn_time + on_time
 	_t = fmod(phase * cycle, cycle)
 	_burning = true

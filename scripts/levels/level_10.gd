@@ -32,14 +32,19 @@ func _build() -> void:
 	_add_element_orb(Vector2(900, 750), Element.Kind.ROCK)
 	_add_rock_wall(Vector2(1100, 700), Vector2(40, 160))
 
+	# ---- 2026-10-28 改动一：线性元素链 → 元素组合房间 ----
+	# 火种 1400 → 冰墙 1600（横在走廊上，跳不过去）→ 融墙后走进风场 → 托到高处拿钥匙。
+	# 钥匙从原来的 2400 挪到房间上方，逼玩家把"火 + 风"连着用一次。
 	_add_element_orb(Vector2(1400, 750), Element.Kind.FIRE)
 	_add_ice_barrier(Vector2(1600, 700), Vector2(40, 160))
+	_add_wind_field(Vector2(1710, 570), Vector2(140, 420))   # x 1640~1780，y 360~780
+	_add_key(Vector2(1710, 400))
 
-	_add_wind_zone(Vector2(1800, 740), Vector2(80, 160))
+	# 风区（水平加速）往右挪 30，避免和第 10 关新增的上升风场（1640~1780）叠在一起
+	_add_wind_zone(Vector2(1830, 740), Vector2(80, 160))
 	_add_flame_jet(Vector2(1000, 780), true, 0.0)
 	_add_flame_jet(Vector2(2200, 780), true, 0.5)
 
-	_add_key(Vector2(2400, 750))
 	_add_key_door(Vector2(2900, 680), Vector2(40, 200))
 	# 最后一块平台是 2900~3400，左边缘 2900。
 	# 喷火史莱姆原来在 3000（离左边缘 100），按要求改成 1.5 倍 = 150 → 2900 + 150 = 3050。

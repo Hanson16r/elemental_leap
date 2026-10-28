@@ -54,7 +54,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if not body.is_in_group("player"):
 		return
 	if body.has_method("set_updraft"):
-		body.set_updraft(true)
+		body.set_updraft(true, lift_speed)
 		Sfx.play_click()
 
 

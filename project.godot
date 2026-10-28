@@ -65,9 +65,6 @@ restart={
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-; 像素画必须用「最近的」采样，否则 48×48 的角色/史莱姆放大后会被线性插值糊掉。
-; 这两张行走图（1璃月行走图男.png、6元素史莱姆.png）都是像素画；
-; 参考项目「新建游戏项目」里也是同一个设置（texture_filter=0）。
-textures/canvas_textures/default_texture_filter=0

@@ -48,6 +48,7 @@ const KEY_SCENE: PackedScene = preload("res://scenes/collectibles/key.tscn")
 const WALKER_SCENE: PackedScene = preload("res://scenes/enemies/walker.tscn")
 const FIRE_SHOOTER_SCENE: PackedScene = preload("res://scenes/enemies/fire_shooter.tscn")
 const FLAME_JET_SCENE: PackedScene = preload("res://scenes/hazards/flame_jet.tscn")
+const PRESSURE_PLATE_SCENE: PackedScene = preload("res://scenes/hazards/pressure_plate.tscn")
 const KEY_DOOR_SCENE: PackedScene = preload("res://scenes/hazards/key_door.tscn")
 
 # ---- 子类要覆盖的 ----
@@ -367,9 +368,11 @@ func _add_wind_zone(pos: Vector2, size: Vector2) -> Area2D:
 
 
 ## 风场：站进去会被持续往上托，用来"飞"上高台
-func _add_wind_field(pos: Vector2, size: Vector2) -> Area2D:
+## lift_speed 默认 260（正常升力）；第 9 关高台边缘的"微弱风场"传 104（40%）
+func _add_wind_field(pos: Vector2, size: Vector2, lift_speed: float = 260.0) -> Area2D:
 	var node: Area2D = WIND_FIELD_SCENE.instantiate() as Area2D
 	node.set("size", size)
+	node.set("lift_speed", lift_speed)
 	node.position = pos
 	game_layer.add_child(node)
 	return node
@@ -439,11 +442,25 @@ func _add_fire_shooter(pos: Vector2, direction: float = -1.0) -> Area2D:
 
 
 ## 间歇火焰喷口：up=true 地火，false 天火；phase 用来错开节奏
-func _add_flame_jet(pos: Vector2, up: bool = true, phase: float = 0.0, length: float = 110.0) -> Area2D:
+## triggered=true 时不走固定周期，改由压力板之类的信号调用 press()/release() 驱动（第 13 关的天火）
+## off_time 是"灭"的时长，配合固定周期用（默认 1.5 → 一个周期 2.9 秒）
+func _add_flame_jet(pos: Vector2, up: bool = true, phase: float = 0.0, length: float = 110.0,
+		triggered: bool = false, off_time: float = 1.5) -> Area2D:
 	var node: Area2D = FLAME_JET_SCENE.instantiate() as Area2D
 	node.set("up", up)
 	node.set("phase", phase)
 	node.set("length", length)
+	node.set("triggered", triggered)
+	node.set("off_time", off_time)
+	node.position = pos
+	game_layer.add_child(node)
+	return node
+
+
+## 压力板：踩上去发 pressed，松开发 released（第 13 关用来点天花板火焰）
+func _add_pressure_plate(pos: Vector2, width: float = 72.0) -> Area2D:
+	var node: Area2D = PRESSURE_PLATE_SCENE.instantiate() as Area2D
+	node.set("width", width)
 	node.position = pos
 	game_layer.add_child(node)
 	return node

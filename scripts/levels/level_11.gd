@@ -56,7 +56,7 @@ func _build() -> void:
 
 	_add_coin(Vector2(600, 480))
 	_add_coin(Vector2(800, 480))
-	_add_coin(Vector2(1100, 480))
+	# 2026-10-28：按改进方案，上层金币从 3 枚减到 2 枚，和下层奖励价值接近
 	_add_coin(Vector2(500, 750))
 	_add_coin(Vector2(1200, 750))
 
