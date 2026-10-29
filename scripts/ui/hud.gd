@@ -89,7 +89,7 @@ func _on_element_changed(kind: int) -> void:
 
 
 func refresh() -> void:
-	_level_label.text = "第 %d 关 · %s" % [GameState.current_level, GameState.level_title]
+	_level_label.text = "第 %d 关 · %s" % [GameState.level_position(GameState.current_level), GameState.level_title]
 	_death_label.text = "死亡 %d 次" % GameState.deaths
 	_time_label.text = "用时 %s" % GameState.format_time(GameState.elapsed)
 	var best := GameState.best_time(GameState.current_level)

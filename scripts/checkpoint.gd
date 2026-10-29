@@ -5,6 +5,9 @@ extends Area2D
 ## 注意：已激活的检查点不会重复触发，否则玩家反复经过会响个不停。
 
 @export var radius: float = 26.0
+## 触发区竖向高度：> 0 时把触发区拉成长条（从地面往上这么高），
+## 上下两条路线（比如桥面和地面）经过都能碰到
+@export var reach: float = 0.0
 
 var _active: bool = false
 var _visual: Node2D
@@ -18,11 +21,18 @@ func setup(pos: Vector2) -> void:
 
 func _ready() -> void:
 	_visual = get_node_or_null("Visual") as Node2D
-	var shape := CircleShape2D.new()
-	shape.radius = radius
 	var col := get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if col != null:
-		col.shape = shape
+		if reach > 0.0:
+			# 竖向长条：底边落在地面上，往上覆盖 reach 像素
+			var rect := RectangleShape2D.new()
+			rect.size = Vector2(radius * 2.0, reach)
+			col.shape = rect
+			col.position = Vector2(0.0, -reach * 0.5)
+		else:
+			var shape := CircleShape2D.new()
+			shape.radius = radius
+			col.shape = shape
 	body_entered.connect(_on_body_entered)
 	if _my_pos == Vector2.ZERO:
 		_my_pos = global_position + Vector2(0.0, -30.0)

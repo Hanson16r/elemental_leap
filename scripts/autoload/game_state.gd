@@ -6,10 +6,16 @@ extends Node
 ## （编辑器里跑的时候可能叫 Godot，导出后会变成游戏名）
 
 const SAVE_PATH := "user://progress.cfg"
-## 现在是 12 关：2026-10-28 把第 1、2 关合并成第 1 关，并把「终章：元素城堡」挪到最后。
-const TOTAL_LEVELS := 12
-## 存档格式版本。3 = 合并第 1、2 关 + 终章挪到最后之后的编号。
-const SAVE_VERSION := 3
+## 关卡出场顺序：第 i 个元素 = 第 i+1 关加载哪个关卡文件（level_<编号>.tscn）。
+## 想调整关卡先后顺序只改这一行，把编号换个位置即可：
+##   例：想先玩「天空之城」(4)、再玩「分岔」(3) → [1, 2, 4, 3, 5, ...]
+## 文件名、脚本里的 level_number、存档都不用动：存档按关卡编号（身份）记，
+## 编号不会因为换顺序而变；界面上显示的「第几关」按位置算。
+const LEVEL_ORDER := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+## 关卡总数。加/删关卡时和 LEVEL_ORDER 一起改（= LEVEL_ORDER.size()）。
+const TOTAL_LEVELS := 11
+## 存档格式版本。4 = 删掉「火之花」并重排 3/4 关之后的编号。
+const SAVE_VERSION := 4
 
 ## 已解锁到第几关（1 起算）
 var unlocked_level: int = 1
@@ -58,10 +64,13 @@ func load_progress() -> void:
 	# 旧存档逐步迁移到当前编号：每一步只搬关号，不动成绩本身。
 	#  v1→v2：删掉第 4 关「冰之谷」，后面的关号前移一位。
 	#  v2→v3：合并第 1、2 关，终章挪到最后。
+	#  v3→v4：删掉「火之花」，「分岔」「天空之城」前移，其余顺延。
 	if version < 2:
 		_migrate_v1_to_v2()
 	if version < 3:
 		_migrate_v2_to_v3()
+	if version < 4:
+		_migrate_v3_to_v4()
 	if version < SAVE_VERSION:
 		save_progress()
 	unlocked_level = clampi(unlocked_level, 1, TOTAL_LEVELS)
@@ -138,6 +147,25 @@ static func _map_unlocked_v3(level: int) -> int:
 	return maxi(1, mini(level - 1, 12))
 
 
+## 旧存档（v3）→ 新编号（v4）：
+##   · 第 3 关「火之花」已删除；
+##   · 「分岔」从第 9 关挪到第 3 关，「天空之城」从第 8 关挪到第 4 关；
+##   · 其余顺延：4~7 → 5~8，10~12 → 9~11。
+func _migrate_v3_to_v4() -> void:
+	# 每个旧关号在 v4 里的位置。被删掉的第 3 关不列，它的成绩直接丢弃。
+	const RECORD_MAP := {
+		1: 1, 2: 2,
+		4: 5, 5: 6, 6: 7, 7: 8,
+		8: 4, 9: 3,
+		10: 9, 11: 10, 12: 11,
+	}
+	best_times = _map_level_keys(best_times, RECORD_MAP)
+	best_coins = _map_level_keys(best_coins, RECORD_MAP)
+	coin_totals = _map_level_keys(coin_totals, RECORD_MAP)
+	# 解锁进度按“已通关数量”顺移：删掉第 3 关后，进度超过它的整体 -1。
+	unlocked_level = maxi(1, mini(unlocked_level - (1 if unlocked_level > 3 else 0), TOTAL_LEVELS))
+
+
 ## 按映射表搬运字典里的关号键；没有映射的键（例如被合并掉的第 1、2 关）就丢弃。
 static func _map_level_keys(src: Dictionary, mapping: Dictionary) -> Dictionary:
 	var out: Dictionary = {}
@@ -151,6 +179,28 @@ static func _map_level_keys(src: Dictionary, mapping: Dictionary) -> Dictionary:
 
 func best_time(level: int) -> float:
 	return float(best_times.get(str(level), 0.0))
+
+
+# ===================================================================== 关卡顺序
+# 「position」= 玩家眼里的第几关（1 起算，受 LEVEL_ORDER 影响）；
+# 「level_id」= 关卡文件的编号（level_<编号>.tscn，也是存档里的键，换顺序不变）。
+
+## 第 position 关实际加载哪个关卡文件编号
+static func level_id_at(position: int) -> int:
+	if position < 1 or position > LEVEL_ORDER.size():
+		return position
+	return int(LEVEL_ORDER[position - 1])
+
+
+## 关卡文件编号现在是第几关；不在顺序表里（比如调试时单独加载）就按编号原样算
+static func level_position(level_id: int) -> int:
+	var index := LEVEL_ORDER.find(level_id)
+	return index + 1 if index >= 0 else level_id
+
+
+## 第 position 关的场景路径
+static func level_scene_path(position: int) -> String:
+	return "res://scenes/levels/level_%d.tscn" % level_id_at(position)
 
 
 func best_coin(level: int) -> int:
@@ -204,18 +254,20 @@ func complete_level() -> void:
 	if coins > old_coins:
 		best_coins[key] = coins
 	coin_totals[key] = coin_total
-	if current_level + 1 > unlocked_level:
-		unlocked_level = mini(current_level + 1, TOTAL_LEVELS)
+	# 解锁按「位置」算：打完第 position 关就解锁 position + 1
+	var position := level_position(current_level)
+	if position + 1 > unlocked_level:
+		unlocked_level = mini(position + 1, TOTAL_LEVELS)
 	save_progress()
 	Events.level_finished.emit(current_level)
 
 
 func has_next_level() -> bool:
-	return current_level < TOTAL_LEVELS
+	return level_position(current_level) < TOTAL_LEVELS
 
 
 func all_levels_done() -> bool:
-	return unlocked_level >= TOTAL_LEVELS and best_time(TOTAL_LEVELS) > 0.0
+	return unlocked_level >= TOTAL_LEVELS and best_time(level_id_at(TOTAL_LEVELS)) > 0.0
 
 
 ## 把秒数格式化成 12.34 秒 / 1 分 05.20 秒

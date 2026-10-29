@@ -36,6 +36,10 @@ extends Node2D
 ## 想改"坑有多高"就调这个和 water_drop，两者之和别超过 210：
 ## 下层走廊的玩家头顶在平台顶面往下 42 像素处，水底再低就会把走下层的人一起淹了。
 @export var water_depth: float = 90.0
+## 触发区往上够多高（像素，0 = 用默认值）。
+## 水面和桥面齐平、前面又隔着跳跃缺口时，玩家是"跳在半空"才碰到水面的，
+## 这个值要比跳跃最高点还高，才能在落地前把水冻住。
+@export var trigger_reach: float = 0.0
 
 var _frozen: bool = false
 var _water: Polygon2D
@@ -110,6 +114,8 @@ func _ready() -> void:
 	# 下沉水池往上多伸到 -60，让玩家站在池边（脚就在桥面高度）拿着冰就能把水冻住，
 	# 不用先跳出去赌一把 —— 这是"下沉水池"比老水池多出来的一步操作体验。
 	var t_top := -60.0 if _drop > 0.0 else -30.0
+	# 想让玩家"跳在半空就把水冻住"，就把触发区往上抬高
+	t_top = minf(t_top, -trigger_reach)
 	var t_bottom := 90.0
 	_trigger = Area2D.new()
 	_trigger.collision_layer = 0

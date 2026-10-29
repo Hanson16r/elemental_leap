@@ -1,49 +1,66 @@
 extends "res://scripts/level_base.gd"
-## 关卡 11 ——「冰宫」（冰滑道 + 风场 + 火融冰墙 + 钥匙门 + 三层终点）
+## 关卡 12 ——「终章：元素城堡」（五种元素 + 地火 + 史莱姆 + 喷火史莱姆 + 钥匙门）
 
 func _ready() -> void:
 	level_number = 11
-	level_title = "冰宫"
-	world_size = Vector2(2600, 1800)
-	start_position = Vector2(100, 1500)
-	finish_position = Vector2(2450, 719)
+	level_title = "终章：元素城堡"
+	world_size = Vector2(3400, 1200)
+	start_position = Vector2(100, 700)
+	finish_position = Vector2(3200, 779)
 	super()
 
 
 func _subtitle() -> String:
-	return "冰滑道 → 风场到二层 → 火融冰墙 → 钥匙/锁门 → 三层终点。"
+	return "五种元素、地火/天火、史莱姆和喷火史莱姆；最后一关。"
 
 
 func _intro_hint() -> String:
-	return "滑道尽头要跳；风场把你托上二层；钥匙在支路，锁门后是金币房。"
+	return "冰 → 岩 → 火 → 风全用上；地火/天火读节奏，钥匙开门。"
 
 
 func _build() -> void:
-	# 起点平台必须盖住出生点 (100, 1500)。
-	# 原来写的是 550 宽 700，只铺到 200~900，出生点 x=100 悬在平台外面，
-	# 一进关卡就往下掉、直接摔进死亡区（第 11 关开局的 bug）。
-	# 现在保持右端 900 不动，向左延长到原来的 1.3 倍：700 × 1.3 = 910 → -10~900。
-	_add_platform(Vector2(445, 1520), 910, 40)   # -10~900，顶 1500（原 200~900，宽 700）
-	_add_freeze_pool(Vector2(700, 1500), 400)    # 500~900，冰面
-	_register_surface("static", Vector2(700, 1510), 400, 20, "ice_slide（需冰冻）", Vector2.ZERO)
-	_add_wind_field(Vector2(1000, 1220), Vector2(170, 360))
-	_add_platform(Vector2(1550, 1120), 700, 40)  # 1200~1900，顶 1100
+	_add_platform(Vector2(200, 800), 600, 40)     # -100~500
+	_add_platform(Vector2(900, 800), 600, 40)     # 600~1200
+	_add_platform(Vector2(1650, 800), 700, 40)    # 1300~2000
+	_add_platform(Vector2(2450, 800), 700, 40)    # 2100~2800
+	_add_platform(Vector2(3150, 800), 500, 40)    # 2900~3400
 
-	_add_element_orb(Vector2(250, 1450), Element.Kind.ICE)
-	_add_element_orb(Vector2(1300, 1050), Element.Kind.FIRE)
-	_add_ice_barrier(Vector2(1500, 1020), Vector2(40, 160))
-	_add_key(Vector2(1600, 1050))
-	_add_key_door(Vector2(1700, 1020), Vector2(40, 160))
+	_add_element_orb(Vector2(250, 750), Element.Kind.ICE)
+	_add_freeze_pool(Vector2(600, 780), 300)      # 450~750
+	_register_surface("static", Vector2(600, 790), 300, 20, "ice_slide（需冰冻）", Vector2.ZERO)
 
-	_add_coin(Vector2(800, 1450))
-	_add_coin(Vector2(1100, 1000))
-	_add_coin(Vector2(1800, 1050))
-	_add_coin(Vector2(1850, 1050))
-	_add_coin(Vector2(2100, 650))
+	_add_element_orb(Vector2(900, 750), Element.Kind.ROCK)
+	_add_rock_wall(Vector2(1100, 700), Vector2(40, 160))
 
-	_add_wind_field(Vector2(1900, 900), Vector2(150, 300))
-	_add_platform(Vector2(2250, 720), 500, 40)   # 2000~2500，顶 700
-	_add_checkpoint(Vector2(850, 1500))
-	_add_checkpoint(Vector2(1250, 1100))
+	# ---- 2026-10-28 改动一：线性元素链 → 元素组合房间 ----
+	# 火种 1400 → 冰墙 1600（横在走廊上，跳不过去）→ 融墙后走进风场 → 托到高处拿钥匙。
+	# 钥匙从原来的 2400 挪到房间上方，逼玩家把"火 + 风"连着用一次。
+	_add_element_orb(Vector2(1400, 750), Element.Kind.FIRE)
+	_add_ice_barrier(Vector2(1600, 700), Vector2(40, 160))
+	_add_wind_field(Vector2(1710, 570), Vector2(140, 420))   # x 1640~1780，y 360~780
+	_add_key(Vector2(1710, 400))
+
+	# 风区（水平加速）往右挪 30，避免和第 12 关新增的上升风场（1640~1780）叠在一起
+	_add_wind_zone(Vector2(1830, 740), Vector2(80, 160))
+	_add_flame_jet(Vector2(1000, 780), true, 0.0)
+	_add_flame_jet(Vector2(2200, 780), true, 0.5)
+
+	_add_key_door(Vector2(2900, 680), Vector2(40, 200))
+	# 最后一块平台是 2900~3400，左边缘 2900。
+	# 喷火史莱姆原来在 3000（离左边缘 100），按要求改成 1.5 倍 = 150 → 2900 + 150 = 3050。
+	# 这样从 2800~2900 的缝隙跳过来、落在平台左端时，有更宽的安全落地区。
+	_add_fire_shooter(Vector2(3050, 760), -1.0)
+
+	_add_coin(Vector2(500, 750))
+	_add_coin(Vector2(1000, 750))
+	_add_coin(Vector2(1500, 750))
+	_add_coin(Vector2(2000, 750))
+	_add_coin(Vector2(3100, 750))
+
+	_add_checkpoint(Vector2(1500, 780))
+	_add_walker(Vector2(1300, 760), 80, 55)
+	# 倒数第二块平台（2100~2800）上原来还有一只巡逻的史莱姆，已按需求撤掉：
+	# 那块平台是通往最后一块平台和钥匙门的起跳点，落点被怪占着很容易被撞下去。
 	_add_finish_flag(finish_position)
-	_add_death_zone(1700, -200, 2700)
+
+	_add_death_zone(1200, -200, 3500)

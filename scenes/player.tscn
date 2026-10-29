@@ -67,11 +67,11 @@ collision_layer = 2
 script = ExtResource("1_player")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=141404684]
-offset = Vector2(0, -12.3)
 scale = Vector2(1.8, 1.8)
 sprite_frames = SubResource("SpriteFrames_mj0ih")
 animation = &"idle"
 autoplay = "idle"
+offset = Vector2(0, -12.3)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=241614827]
 position_smoothing_enabled = true

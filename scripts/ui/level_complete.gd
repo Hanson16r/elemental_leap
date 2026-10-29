@@ -20,7 +20,7 @@ func setup(level_number: int, title: String, elapsed: float, deaths: int) -> voi
 		"　★ 全收集" if star else "",
 	]
 
-	var best := GameState.best_time(level_number)
+	var best := GameState.best_time(GameState.current_level)
 	if is_equal_approx(best, elapsed):
 		box.get_node("Best").text = "🏆 新纪录！"
 		box.get_node("Best").modulate = Color(1.0, 0.86, 0.35)
@@ -47,7 +47,7 @@ func _retry() -> void:
 
 func _next() -> void:
 	var next := _level_number + 1
-	get_tree().change_scene_to_file("res://scenes/levels/level_%d.tscn" % next)
+	get_tree().change_scene_to_file(GameState.level_scene_path(next))
 
 
 func _to_menu() -> void:

@@ -20,7 +20,7 @@ var _level_buttons: Array[Button] = []
 
 func _ready() -> void:
 	_title.text = "冰塔跳跃"
-	_subtitle.text = "12 个关卡：火/水/冰/风/岩石的元素解谜，以及金币、敌人、间歇火焰、滑冰和钥匙门。"
+	_subtitle.text = "11 个关卡：火/水/冰/风/岩石的元素解谜，以及金币、敌人、间歇火焰、滑冰和钥匙门。"
 	_tip.text = "A / D 或 ← → 移动　空格跳跃　R 重开　Esc 暂停"
 	_start_btn.pressed.connect(_start)
 	_continue_btn.pressed.connect(_continue)
@@ -85,7 +85,7 @@ func _refresh() -> void:
 	for i in _level_buttons.size():
 		_level_buttons[i].disabled = (i + 1) > unlocked
 		# 金币拿满的关卡显示 ★
-		_level_buttons[i].text = str(i + 1) + (" ★" if GameState.has_star(i + 1) else "")
+		_level_buttons[i].text = str(i + 1) + (" ★" if GameState.has_star(GameState.level_id_at(i + 1)) else "")
 
 
 func _start() -> void:
@@ -105,7 +105,7 @@ func _reset() -> void:
 
 
 func _go(level: int) -> void:
-	get_tree().change_scene_to_file("res://scenes/levels/level_%d.tscn" % level)
+	get_tree().change_scene_to_file(GameState.level_scene_path(level))
 
 
 ## 底部关卡按钮：没解锁的按钮是 disabled 的，点了也不会进来

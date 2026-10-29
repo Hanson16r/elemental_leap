@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/walker.gd" id="1_walker"]
+[ext_resource type="Texture2D" path="res://scripts/enemies/6元素史莱姆.png" id="2_slime"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_plain0"]
+atlas = ExtResource("2_slime")
+region = Rect2(288, 192, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_plain1"]
+atlas = ExtResource("2_slime")
+region = Rect2(336, 192, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_plain2"]
+atlas = ExtResource("2_slime")
+region = Rect2(384, 192, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_plain"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_plain0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_plain1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_plain2")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 8.0
+}]
+
+[node name="PlainSlime" type="Area2D"]
+script = ExtResource("1_walker")
+
+[node name="Slime" type="AnimatedSprite2D" parent="."]
+scale = Vector2(1.2, 1.2)
+offset = Vector2(0, -7.3)
+sprite_frames = SubResource("SpriteFrames_plain")
+animation = &"walk"
+autoplay = "walk"

@@ -26,7 +26,6 @@ const LEVEL_SCENES := [
 	"res://scenes/levels/level_9.tscn",
 	"res://scenes/levels/level_10.tscn",
 	"res://scenes/levels/level_11.tscn",
-	"res://scenes/levels/level_12.tscn",
 ]
 
 var _errors: int = 0

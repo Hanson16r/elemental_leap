@@ -1,88 +1,50 @@
 extends "res://scripts/level_base.gd"
-## 关卡 8 ——「天空之城」（风场垂直起飞 + 高台 + 喷火史莱姆 + 钥匙门）
-## 注意：这一关是竖向风场，几何检查工具不适用，靠真人试玩验收。
+## 关卡 7 ——「元素回廊」（冰、岩、火、风各来一次）
 
 func _ready() -> void:
 	level_number = 8
-	level_title = "天空之城"
-	world_size = Vector2(2000, 1800)
-	start_position = Vector2(100, 1500)
-	finish_position = Vector2(990, 1120)
+	level_title = "元素回廊"
+	world_size = Vector2(3200, 1100)
+	start_position = Vector2(100, 700)
+	finish_position = Vector2(3000, 779)
 	super()
 
 
 func _subtitle() -> String:
-	return "两段风场 → 高台 → 逆风走廊 → 坐升降台下去，终点在下层。"
+	return "冰、岩、火、风各来一次；四种元素轮着用。"
 
 
 func _intro_hint() -> String:
-	return "风场两段中间要横跳；风门要等风；逆风走廊按住 D；最后坐升降台到下层找终点。"
+	return "冰冻桥 → 岩石砸墙 → 火融冰墙 → 借风跳坑 → 钥匙门。"
 
 
 func _build() -> void:
-	_add_platform(Vector2(420, 1520), 1040, 40)   # -100~940，顶面 1500（起点平台加长）
+	_add_platform(Vector2(250, 800), 700, 40)     # -100~400? 250±350 = -100~600
+	_add_platform(Vector2(750, 800), 500, 40)     # 500~1000
+	_add_platform(Vector2(1350, 800), 500, 40)    # 1100~1600
+	_add_platform(Vector2(2050, 800), 700, 40)    # 1700~2400
+	_add_platform(Vector2(2750, 800), 500, 40)    # 2500~3000
 
-	# 2026-10-28：加长的垂直隔板（x 900~940，y 1050~1500）
-	# 把「起点/风场一侧」和「终点一侧」隔开：终点就在隔板右边、下层地板上，
-	# 从起点这侧过不去，只能上风场绕到右边、坐升降台下去再走回来。
-	var wall := _add_platform(Vector2(920, 1275), 40, 450)   # x 900~940，y 1050~1500
-	# 隔板用更深的颜色，和蓝色平台区分开
-	var wall_vis := wall.get_node_or_null("Visual") as Polygon2D
-	if wall_vis != null:
-		wall_vis.color = Color(0.32, 0.36, 0.44)
-	_add_sign(Vector2(600, 1432), "终点在隔板另一边，得绕一圈")
+	_add_element_orb(Vector2(250, 750), Element.Kind.ICE)
+	_add_freeze_pool(Vector2(600, 780), 200)      # 500~700
+	_register_surface("static", Vector2(600, 790), 200, 20, "ice_slide（需冰冻）", Vector2.ZERO)
+	_add_element_orb(Vector2(800, 750), Element.Kind.ROCK)
+	_add_rock_wall(Vector2(1000, 700), Vector2(40, 160))
+	_add_element_orb(Vector2(1200, 750), Element.Kind.FIRE)
+	_add_ice_barrier(Vector2(1400, 700), Vector2(40, 160))
+	_add_wind_zone(Vector2(1600, 740), Vector2(80, 160))
+	_add_key(Vector2(1900, 750))
+	_add_key_door(Vector2(2600, 680), Vector2(40, 200))
 
-	# ---- 2026-10-28 改动一：单一风场拆成两段，中间留 100 像素横向缺口 ----
-	# 第一段 150 宽（x 550~680）：把人从地面托到 y≈1000
-	_add_wind_field(Vector2(615, 1225), Vector2(130, 450))     # x 550~680, y 1000~1450
-	# 第二段 200 宽（x 780~940）：接住横跳过来的人，再托到高台顶面（880）上方
-	_add_wind_field(Vector2(860, 935), Vector2(160, 230))      # x 780~940, y 820~1050
+	_add_coin(Vector2(500, 750))
+	_add_coin(Vector2(700, 750))
+	_add_coin(Vector2(1000, 750))
+	_add_coin(Vector2(1500, 750))
+	_add_coin(Vector2(2200, 750))
 
-	# ---- 2026-10-28 改动二：高台边缘内缩 50，缩进处放 40% 的微弱风场 + 金币 ----
-	_add_platform(Vector2(1150, 900), 300, 40)    # 1000~1300，顶面 880
-	_add_platform(Vector2(975, 920), 50, 40)      # 950~1000，缩进台阶，顶面 900
-	# 微弱风场放在台阶偏左（x 940~990），这样站在主平台左边缘（x≥1003）不会被误托起来
-	_add_wind_field(Vector2(965, 780), Vector2(50, 220), 104.0)  # 670~890，升力 40%
-
-	# ---- 2026-10-28 改动三：两段风场之间的中层悬台 ----
-	# 悬台从 680 铺到 780（正好盖住整段缺口的下方），掉下来的人都能落住；
-	# 先落稳再决定：往左跳回第一段，或往右跳进第二段（第二段底部 1050，只差 50，够得着）。
-	# 想走主路的人可以完全不理它，直接从第一段顶部横跳进第二段。
-	_add_platform(Vector2(730, 1120), 100, 40)    # 680~780，顶面 1100
-	_add_sign(Vector2(700, 1066), "中途落脚点")
-
-	# ---- 方向二：周期风门（纯时机型）----
-	# 风带 1200~1300（高台右端），门 1300~1340；每 6 秒吹 3 秒，只在吹的时候门开。
-	_add_wind_gate(Vector2(1320, 830))
-	_add_sign(Vector2(1015, 795), "等风来")
-
-	# ================= 2026-10-28 改动五：回字形后半段 =================
-	# 上层：1340~1730 的水平逆风走廊（按住 D 顶过去；风力是原来的两倍）。
-	_add_platform(Vector2(1535, 900), 390, 40)     # 1340~1730，顶面 880（原来 260，×1.5）
-	_add_reverse_wind(Vector2(1545, 835), Vector2(370, 70), -160.0)  # 1360~1730，右沿和走廊平台右沿对齐；-160 = 原两倍
-	_add_sign(Vector2(1352, 782), "逆风：按住 D 过去")
-
-	# 上下层连接：走廊右端的升降台，从上层 880 坐到底层 1120。
-	_add_moving_platform(Vector2(1820, 1000), Vector2(0, 220), 150.0, 120)  # 1760~1880，顶面 879 ↔ 1099；速度 100→150（×1.5）
-	_add_sign(Vector2(1745, 800), "升降台 ↓ 终点在下面")
-
-	# 下层：940~1980 的地板（顶面 1120）——地火 + 冰史莱姆 + 真正的终点。
-	_add_platform(Vector2(1460, 1140), 1040, 40)   # 940~1980，顶面 1120
-	# 地火只留最左边这一处（原来 1400 / 1520 / 1600 三个，按反馈删掉右边两个）
-	_add_flame_jet(Vector2(1400, 1120), true, 0.0, 110.0)
-	# 换成冰史莱姆：只会来回巡逻，不会放火球
-	_add_walker(Vector2(1250, 1100), 80, 55)
-	_add_sign(Vector2(1080, 1120), "终点在左边 ←")
-
-	_add_sign(Vector2(600, 1380), "两段风场：升起来→横跳→再升")
-	_add_sign(Vector2(910, 1000), "台阶边有股弱风，金币在上面")
-
-	_add_coin(Vector2(300, 1470))
-	_add_coin(Vector2(615, 1100))
-	_add_coin(Vector2(900, 900))
-	_add_coin(Vector2(965, 700))     # 微弱风场里的金币
-	_add_coin(Vector2(1150, 840))
-	_add_coin(Vector2(1450, 830))
-
+	_add_checkpoint(Vector2(1200, 780))
+	_add_walker(Vector2(1100, 760), 80, 55)
+	_add_walker(Vector2(2000, 760), 100, 60)
 	_add_finish_flag(finish_position)
-	_add_death_zone(1700, -200, 2100)
+
+	_add_death_zone(1150, -200, 3300)

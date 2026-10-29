@@ -37,6 +37,7 @@ const ELEMENT_RECEIVER_SCENE: PackedScene = preload("res://scenes/elements/eleme
 const WATER_ZONE_SCENE: PackedScene = preload("res://scenes/elements/water_zone.tscn")
 const ICE_BARRIER_SCENE: PackedScene = preload("res://scenes/elements/ice_barrier.tscn")
 const FREEZE_POOL_SCENE: PackedScene = preload("res://scenes/elements/freeze_pool.tscn")
+const FROST_ZONE_SCENE: PackedScene = preload("res://scenes/world/frost_zone.tscn")
 const WIND_ZONE_SCENE: PackedScene = preload("res://scenes/elements/wind_zone.tscn")
 const WIND_FIELD_SCENE: PackedScene = preload("res://scenes/elements/wind_field.tscn")
 const ROCK_WALL_SCENE: PackedScene = preload("res://scenes/elements/rock_wall.tscn")
@@ -46,6 +47,8 @@ const ROCK_PILLAR_SCENE: PackedScene = preload("res://scenes/elements/rock_pilla
 const COIN_SCENE: PackedScene = preload("res://scenes/collectibles/coin.tscn")
 const KEY_SCENE: PackedScene = preload("res://scenes/collectibles/key.tscn")
 const WALKER_SCENE: PackedScene = preload("res://scenes/enemies/walker.tscn")
+const PLAIN_SLIME_SCENE: PackedScene = preload("res://scenes/enemies/slime_plain.tscn")
+const WATER_SLIME_SCENE: PackedScene = preload("res://scenes/enemies/water_slime.tscn")
 const FIRE_SHOOTER_SCENE: PackedScene = preload("res://scenes/enemies/fire_shooter.tscn")
 const FLAME_JET_SCENE: PackedScene = preload("res://scenes/hazards/flame_jet.tscn")
 const PRESSURE_PLATE_SCENE: PackedScene = preload("res://scenes/hazards/pressure_plate.tscn")
@@ -206,7 +209,7 @@ func _connect_events() -> void:
 func _show_card() -> void:
 	var card: CanvasLayer = CARD_SCENE.instantiate()
 	add_child(card)
-	card.show_card(level_number, level_title, _subtitle())
+	card.show_card(GameState.level_position(level_number), level_title, _subtitle())
 
 
 # ===================================================================== 搭建辅助函数
@@ -292,9 +295,11 @@ func _add_flame_row(from_x: float, to_x: float, y: float, step: float = 34.0) ->
 		x += step
 
 
-## 加检查点（Day 6）
-func _add_checkpoint(pos: Vector2) -> Area2D:
+## 加检查点（Day 6）；reach > 0 时触发区拉成竖向长条，上下两条路线经过都能碰到
+func _add_checkpoint(pos: Vector2, reach: float = 0.0) -> Area2D:
 	var node: Area2D = CHECKPOINT_SCENE.instantiate()
+	if reach > 0.0:
+		node.set("reach", reach)
 	game_layer.add_child(node)
 	node.global_position = pos
 	node.setup(pos)
@@ -371,12 +376,14 @@ func _add_freeze_pool(
 	water_drop: float = 0.0,
 	drowns: bool = false,
 	water_depth: float = 90.0,
+	trigger_reach: float = 0.0,
 ) -> Node2D:
 	var node: Node2D = FREEZE_POOL_SCENE.instantiate() as Node2D
 	node.set("width", width)
 	node.set("water_drop", water_drop)
 	node.set("drowns", drowns)
 	node.set("water_depth", water_depth)
+	node.set("trigger_reach", trigger_reach)
 	# ★ 必须先把位置摆好，再 add_child ★
 	# 因为池子 _ready() 里会建一块 AnimatableBody2D 冰桥；如果池子进树后才移动，
 	# 冰桥的物理体可能还留在 (0,0)，玩家就会直接掉进水里（第 4 关踩过的坑）。
@@ -454,6 +461,35 @@ func _add_walker(pos: Vector2, patrol: float = 120.0, speed: float = 60.0) -> Ar
 	var node: Area2D = WALKER_SCENE.instantiate() as Area2D
 	node.set("patrol", patrol)
 	node.set("speed", speed)
+	node.position = pos
+	game_layer.add_child(node)
+	return node
+
+
+## 普通史莱姆：淡绿这一套贴图，和蓝色水史莱姆区分开（行为与 _add_walker 完全一样）
+func _add_plain_slime(pos: Vector2, patrol: float = 60.0, speed: float = 60.0) -> Area2D:
+	var node: Area2D = PLAIN_SLIME_SCENE.instantiate() as Area2D
+	node.set("patrol", patrol)
+	node.set("speed", speed)
+	node.position = pos
+	game_layer.add_child(node)
+	return node
+
+
+## 水史莱姆：和普通史莱姆一样巡逻，但会在"有效中的冰霜地带"里被冻住 2.5 秒
+func _add_water_slime(pos: Vector2, patrol: float = 90.0, speed: float = 60.0) -> Area2D:
+	var node: Area2D = WATER_SLIME_SCENE.instantiate() as Area2D
+	node.set("patrol", patrol)
+	node.set("speed", speed)
+	node.position = pos
+	game_layer.add_child(node)
+	return node
+
+
+## 冰霜地带：玩家经过时激活 4 秒，水史莱姆在有效期内进入会被冻住
+func _add_frost_zone(pos: Vector2, width: float = 140.0) -> Node2D:
+	var node: Node2D = FROST_ZONE_SCENE.instantiate() as Node2D
+	node.set("width", width)
 	node.position = pos
 	game_layer.add_child(node)
 	return node
@@ -668,7 +704,7 @@ func _on_finish_reached(_pos: Vector2) -> void:
 		await hud.fade_out(0.35)
 	var screen: CanvasLayer = COMPLETE_SCENE.instantiate()
 	add_child(screen)
-	screen.setup(GameState.current_level, GameState.level_title, GameState.elapsed, GameState.deaths)
+	screen.setup(GameState.level_position(GameState.current_level), GameState.level_title, GameState.elapsed, GameState.deaths)
 
 
 # ===================================================================== 暂停

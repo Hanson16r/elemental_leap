@@ -1,47 +1,95 @@
 extends "res://scripts/level_base.gd"
-## 关卡 3 ——「火之花」（火元素：融冰墙 + 点火盆开门）
 
-func _ready() -> void:
+# 第 3 关 · 分岔
+#
+# 2026-10-25 净空修正：原关卡在顶部 y=520 与底部走廊 y=780 之间留了 160 像素，
+#   低于角色实际需要的 181 像素，导致上下通道都走不通，金币也嵌进了平台。
+#   现在上层压低到底面平台顶上，下层走廊与上层平台的 x 范围保持一致。
+#
+# 2026-10-29 重排（按新设计表）：上层保留第二版平台的坐标
+#
+#   上层路线（-100~1400，全部可跳）：
+#     起点平台    -100~350，顶部 520（安全起步区，冰种在 -80）
+#     冻结水池    350~590，水面 600（比桥面低 80、水体深 70，坑高 150）
+#                 没有冰就跳不过去，掉进水里会穿到下层
+#     上层平台    590~950，顶部 520（金币 700 / 880）
+#     冰桥        950~1400：常驻湿冰面（打滑），地火 1250 喷下
+#   下层路线（400~1400，顶部 780）：
+#     水史莱姆 570~730 → 冰霜地带 580~720 与 930~1070（踩上去 4 秒冰霜）→
+#     钥匙 880（两只史莱姆中间）→ 水史莱姆 1020~1200（区域有效时踩进冰霜地带
+#     会被冻成冰晶：实心挡路，但踩上去不会死）→ 检查点 1350（桥面高度也能激活）
+#
+#   上层走完落到汇合 A/B，下层走完也到汇合 A/B，之后钥匙门 1900 与终点
+#   全部保留下层（780）—— 从下层跳不到 520 高度，表里把汇合写成 520 是笔误。
+#
+# 冰种 / 金币 / 检查点 / 史莱姆 / 终点沿用原布局；2026-10-29 晚去掉火种与火盆，
+# 终段的门改成钥匙门（钥匙放在下层两只史莱姆中间）。
+# 下层两只史莱姆都用第二组（浅蓝）水史莱姆（2026-10-29 晚按用户要求统一外观）。
+
+
+func _init() -> void:
 	level_number = 3
-	level_title = "火之花"
-	world_size = Vector2(2800, 1000)
-	start_position = Vector2(100, 700)
-	finish_position = Vector2(2600, 779)
-	super()
-
-
-func _subtitle() -> String:
-	return "火种①融冰墙 → 火种②点火盆 → 开门；小心地火。"
-
-
-func _intro_hint() -> String:
-	return "第一枚火种会被冰墙吃掉；第三平台上还有第二枚火种，用来点火盆。"
+	level_title = "分岔"
+	world_size = Vector2(2400, 1100)
+	start_position = Vector2(100, 480)
+	finish_position = Vector2(2250, 779)
 
 
 func _build() -> void:
-	_add_platform(Vector2(250, 800), 700, 40)     # -100~600
-	_add_platform(Vector2(1050, 800), 700, 40)    # 700~1400
-	_add_platform(Vector2(2050, 800), 1100, 40)   # 1500~2600
-	_add_sign(Vector2(280, 700), "火种①：融冰墙")
+	# ---------------- 上层：起点 → 冻结水池 → 上层平台 → 冰桥 ----------------
+	_add_platform(Vector2(125, 540), 450, 40)   # 起点平台 -100~350，顶部 520
 
-	_add_element_orb(Vector2(300, 750), Element.Kind.FIRE)
-	_add_ice_barrier(Vector2(800, 700), Vector2(40, 160))
-	_add_flame_jet(Vector2(1200, 780), true, 0.0)
-	# 第二枚火种：冰墙消耗掉第一枚后，火盆还需要火
-	_add_element_orb(Vector2(1550, 750), Element.Kind.FIRE)
-	_add_sign(Vector2(1500, 660), "火种②：点火盆")
-	_add_element_receiver(Vector2(1800, 740), Element.Kind.FIRE, "gate")
-	_add_door(Vector2(2000, 680), "gate", Vector2(40, 200))
+	# 冻结水池：350~590（池子本身不接触，属于上层平台的坑）
+	#   水面 600 = 桥面 520 往下 80；水体深 70 → 水底 670，坑高 150
+	#   没冰跳不过去（240 宽 > 满速横跳 171），掉进水里会穿到下层
+	_add_freeze_pool(Vector2(470, 520), 240, 80.0, false, 70.0, 120.0)
+	_register_surface("static", Vector2(470, 530), 240, 20, "ice_pool（需冰冻）", Vector2.ZERO)
 
+	_add_platform(Vector2(770, 540), 360, 40)   # 上层平台 590~950，顶部 520
+
+	# 冰桥 950~1400：常驻的湿冰面（打滑，但不用冰元素也能走）
+	#   冰元素只给起点那道水池用，避免"一个冰种要冻两处水面"的资源死结。
+	_add_ice_platform(Vector2(1175, 540), 450, 40)
+	_add_flame_jet(Vector2(1250, 520), true, 0.0)   # 冰桥上的地火，周期性喷发
+
+	# ---------------- 下层：史莱姆走廊 ----------------
+	_add_platform(Vector2(900, 800), 1000, 40)   # 下层平台 400~1400，顶部 780
+
+	# 汇合平台（顶部 780；从冰桥右端/下层走廊都能到）
+	_add_platform(Vector2(1550, 800), 500, 40)   # 汇合 A 1300~1800
+	_add_platform(Vector2(2100, 800), 400, 40)   # 汇合 B 1900~2300
+
+	# ---------------- 元素 / 机关 ----------------
+	_add_sign(Vector2(330, 440), "水池：拿冰冻住再走 / 掉进水里会落到下层")
+	_add_element_orb(Vector2(-80, 490), Element.Kind.ICE)
+
+	# 钥匙放下层两只史莱姆中间（570~730 与 1020~1200 的正中）
+	_add_key(Vector2(880, 750))
+	_add_key_door(Vector2(1900, 680), Vector2(40, 200))
+
+	# 金币：上层 2 枚 + 下层 2 枚
+	_add_coin(Vector2(700, 480))
+	_add_coin(Vector2(880, 480))
 	_add_coin(Vector2(500, 750))
-	_add_coin(Vector2(1000, 750))
-	_add_coin(Vector2(1300, 750))
-	_add_coin(Vector2(1700, 750))
-	_add_coin(Vector2(2200, 750))
+	_add_coin(Vector2(1200, 750))
 
-	_add_checkpoint(Vector2(1000, 780))
-	_add_walker(Vector2(900, 760), 80, 55)
-	_add_walker(Vector2(1600, 760), 100, 60)
+	# 检查点：竖长触发区，从桥面高度掉下来也能激活
+	_add_checkpoint(Vector2(1350, 780), 300.0)
+
+	# 下层怪物：全部用第二组（浅蓝）水史莱姆
+	#   冰霜地带有效时，走进来的那只会被冻住 2.5 秒（实心挡路，可以踩上去/跳过去）
+	_add_frost_zone(Vector2(650, 780), 140)         # 580~720
+	_add_frost_zone(Vector2(1000, 780), 140)        # 930~1070
+	_add_water_slime(Vector2(650, 760), 80, 55)     # 570~730 之间巡逻
+	_add_water_slime(Vector2(1110, 760), 90, 60)    # 1020~1200 之间巡逻
+
 	_add_finish_flag(finish_position)
+	_add_death_zone(1050, -200, 2500)
 
-	_add_death_zone(1050, -200, 2900)
+
+func _subtitle() -> String:
+	return "拿冰冻住水池过桥；掉进水池会落到下层（史莱姆与冰霜地带）。"
+
+
+func _intro_hint() -> String:
+	return "先捡冰（起点左端）：冻住水池过桥。掉进水池会落到下层，也能到汇合点。"
