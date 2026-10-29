@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c1f5bqiyd6nv6"
-path="res://.godot/imported/第十三关-压力板天火.png-7e3d5fe02267c34cd1d092474f065a56.ctex"
+uid="uid://byt1rxivc2ujx"
+path="res://.godot/imported/level2_vents.png-18f932c7e09c41d61c88949c70e36ebc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/screenshots/第十三关-压力板天火.png"
-dest_files=["res://.godot/imported/第十三关-压力板天火.png-7e3d5fe02267c34cd1d092474f065a56.ctex"]
+source_file="res://docs/level2_vents.png"
+dest_files=["res://.godot/imported/level2_vents.png-18f932c7e09c41d61c88949c70e36ebc.ctex"]
 
 [params]
 

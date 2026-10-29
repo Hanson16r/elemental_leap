@@ -12,6 +12,13 @@ extends AnimatableBody2D
 ## 改一块的宽度，全都会被改掉——这是新手最容易踩的坑之一。
 
 @export var size: Vector2 = Vector2(200.0, 24.0)
+## 冰面材质：站上去摩擦力只有 15%，会带着惯性滑出去。
+## player.gd 每帧用 is_slippery() 问它，所以这里只要暴露这个开关就行。
+@export var slippery: bool = false
+
+
+func is_slippery() -> bool:
+	return slippery
 
 
 func setup(sz: Vector2) -> void:
@@ -29,7 +36,7 @@ func setup(sz: Vector2) -> void:
 		vis.polygon = PackedVector2Array([
 			Vector2(-hw, -hh), Vector2(hw, -hh), Vector2(hw, hh), Vector2(-hw, hh),
 		])
-		vis.color = Color(0.42, 0.55, 0.72)
+		vis.color = Color(0.66, 0.90, 1.0) if slippery else Color(0.42, 0.55, 0.72)
 
 	# 顶面那一道亮边，让"哪里能站"一眼看得出来
 	var top := get_node_or_null("Top") as Line2D
@@ -37,3 +44,6 @@ func setup(sz: Vector2) -> void:
 		var hw2 := sz.x * 0.5
 		var hh2 := sz.y * 0.5
 		top.points = PackedVector2Array([Vector2(-hw2, -hh2), Vector2(hw2, -hh2)])
+		# 冰面用更亮的白蓝边，和普通蓝灰平台区分开
+		if slippery:
+			top.default_color = Color(0.95, 1.0, 1.0)

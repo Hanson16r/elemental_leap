@@ -1,5 +1,5 @@
 extends Area2D
-## 【压力板】—— 踩上去发 pressed、松开发 released。第 13 关用来触发天花板火焰。
+## 【压力板】—— 踩上去发 pressed、松开发 released。第 2 关用来触发天花板火焰。
 ##
 ## 和 button.gd 的区别：按钮只按一次就锁死（开门用），压力板要能反复"踩下 / 松开"，
 ## 所以用 body_entered + body_exited 两个信号，并且记录当前是否被踩住。

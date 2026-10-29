@@ -1,40 +1,59 @@
 extends "res://scripts/level_base.gd"
-## 关卡 1 ——「绿色平原」（马里奥 1-1 风格：跳坑、金币、史莱姆）
+## 关卡 1 ——「绿色平原」（新手关：跳坑、金币、史莱姆 → 移动平台 → 钥匙门）
+##
+## 2026-10-28：原来的第 1 关「绿色平原」和第 2 关「水管与平台」合并成这一关。
+## 结构（总长 3200，检查点在中段偏后）：
+##   A 0~400       出生安全区，1 枚金币
+##   B 400~1020    两个 120 的坑，坑上方各 1 枚金币
+##   C 1020~1700   3 只史莱姆 + 1 枚金币，检查点在 1520
+##   D 1700~2100   400 的大坑，一块慢慢横移的平台
+##   E 2100~3200   钥匙 2300 → 门 2600 → 门后金币 2700 → 终点 2800
 
 func _ready() -> void:
 	level_number = 1
 	level_title = "绿色平原"
-	world_size = Vector2(2800, 1000)
+	world_size = Vector2(3200, 1000)
 	start_position = Vector2(100, 700)
-	finish_position = Vector2(2500, 779)
+	finish_position = Vector2(2800, 779)
 	super()
 
 
 func _subtitle() -> String:
-	return "跳坑、吃金币、躲史莱姆；先熟悉手感。"
+	return "跳坑、躲史莱姆、等移动平台、拿钥匙开门；一关把基础操作教完。"
 
 
 func _intro_hint() -> String:
-	return "A/D 移动，空格跳；金币 5 枚，终点在右边。卡住了按 R 重开。"
+	return "A/D 移动，空格跳；金币 5 枚；中间有检查点，掉坑后从检查点复活。"
 
 
 func _build() -> void:
+	# ---- A 出生安全区 ----
 	_add_platform(Vector2(150, 800), 500, 40)     # -100~400
-	_add_platform(Vector2(700, 800), 400, 40)     # 500~900
-	_add_platform(Vector2(1400, 800), 800, 40)    # 1000~1800
-	_add_platform(Vector2(2300, 800), 800, 40)    # 1900~2700
-	_add_sign(Vector2(280, 700), "空格跳；掉进坑里按 R 重开")
+	_add_sign(Vector2(260, 700), "A/D 移动，空格跳跃；掉进坑里按 R 重开")
 
-	_add_coin(Vector2(250, 750))
-	_add_coin(Vector2(500, 750))
-	_add_coin(Vector2(1200, 750))
-	_add_coin(Vector2(1650, 750))
-	_add_coin(Vector2(2200, 750))
+	# ---- B 两个 120 的坑（金币放在坑上方，跳过去顺手吃）----
+	_add_platform(Vector2(710, 800), 380, 40)     # 520~900
+	_add_platform(Vector2(1360, 800), 680, 40)    # 1020~1700
 
-	_add_checkpoint(Vector2(1100, 780))
-	_add_walker(Vector2(700, 760), 80, 55)
-	_add_walker(Vector2(1500, 760), 100, 60)
-	_add_walker(Vector2(2100, 760), 80, 55)
+	# ---- C 史莱姆教学区：只留一只在中间巡逻 ----
+	_add_walker(Vector2(1280, 760), 60, 60)
+
+	# ---- D 检查点 + 移动平台大坑 ----
+	_add_checkpoint(Vector2(1560, 780))
+	_add_sign(Vector2(1600, 700), "等移动平台过来再上")
+	_add_moving_platform(Vector2(1900, 780), Vector2(240, 0), 70.0, 130)
+
+	# ---- E 钥匙门 + 终点 ----
+	_add_platform(Vector2(2650, 800), 1100, 40)   # 2100~3200
+	_add_key(Vector2(2300, 750))
+	_add_key_door(Vector2(2600, 680), Vector2(40, 200))
 	_add_finish_flag(finish_position)
 
-	_add_death_zone(1050, -200, 2900)
+	# 金币 5 枚：出生区 1、两个坑上方各 1、史莱姆区 1、门后 1
+	_add_coin(Vector2(200, 750))
+	_add_coin(Vector2(460, 710))
+	_add_coin(Vector2(960, 710))
+	_add_coin(Vector2(1250, 750))
+	_add_coin(Vector2(2700, 750))
+
+	_add_death_zone(1050, -200, 3300)

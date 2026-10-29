@@ -1,7 +1,7 @@
 extends Node2D
 ## 关卡基类 —— 对应 Day 5「地面与平台」、Day 6「死亡与重生」、Day 10「UI 与流程」、Day 11「做 3 个关卡」
 ##
-## 三个关卡（scripts/levels/level_1|2|3.gd）都 extends 这个脚本，只重写 _build()。
+## 每个关卡脚本（scripts/levels/level_*.gd）都 extends 这个脚本，只重写 _build()。
 ## 这样"背景、雪、HUD、玩家、检查点、重生、暂停、通关"只写一次，
 ## 每关只负责描述"摆什么"，这就是继承的用处。
 ##
@@ -42,13 +42,15 @@ const WIND_FIELD_SCENE: PackedScene = preload("res://scenes/elements/wind_field.
 const ROCK_WALL_SCENE: PackedScene = preload("res://scenes/elements/rock_wall.tscn")
 const ROCK_PILLAR_SCENE: PackedScene = preload("res://scenes/elements/rock_pillar.tscn")
 
-# ---- 收集品 / 敌人 / 间歇火焰（第 10 关起）----
+# ---- 收集品 / 敌人 / 间歇火焰（第 12 关起）----
 const COIN_SCENE: PackedScene = preload("res://scenes/collectibles/coin.tscn")
 const KEY_SCENE: PackedScene = preload("res://scenes/collectibles/key.tscn")
 const WALKER_SCENE: PackedScene = preload("res://scenes/enemies/walker.tscn")
 const FIRE_SHOOTER_SCENE: PackedScene = preload("res://scenes/enemies/fire_shooter.tscn")
 const FLAME_JET_SCENE: PackedScene = preload("res://scenes/hazards/flame_jet.tscn")
 const PRESSURE_PLATE_SCENE: PackedScene = preload("res://scenes/hazards/pressure_plate.tscn")
+const WIND_GATE_SCENE: PackedScene = preload("res://scenes/hazards/wind_gate.tscn")
+const REVERSE_WIND_SCENE: PackedScene = preload("res://scenes/hazards/reverse_wind.tscn")
 const KEY_DOOR_SCENE: PackedScene = preload("res://scenes/hazards/key_door.tscn")
 
 # ---- 子类要覆盖的 ----
@@ -221,6 +223,19 @@ func _add_platform(pos: Vector2, w: float = 200.0, h: float = 24.0) -> Animatabl
 	return body
 
 
+## 加一块"冰面"平台：顶面和普通平台一样平，但站上去只有 15% 摩擦力，会滑。
+## 第 9 关的冰桥用它；以后需要"滑一段"的整块平台也能直接用。
+func _add_ice_platform(pos: Vector2, w: float = 200.0, h: float = 24.0) -> AnimatableBody2D:
+	var body: AnimatableBody2D = PLATFORM_SCENE.instantiate()
+	game_layer.add_child(body)
+	body.global_position = pos
+	# 先打上冰面标记，再 setup()：setup() 会按 slippery 换成冰色和亮白边
+	body.set("slippery", true)
+	body.setup(Vector2(w, h))
+	_register_surface("static", pos, w, h, "ice_bridge（冰面）", Vector2.ZERO)
+	return body
+
+
 ## 加一块会消失再出现的平台（Day 9）
 func _add_blink_platform(pos: Vector2, w: float = 160.0, phase: float = 0.0) -> AnimatableBody2D:
 	var node: AnimatableBody2D = BLINK_SCENE.instantiate()
@@ -347,12 +362,24 @@ func _add_ice_barrier(pos: Vector2, size: Vector2) -> StaticBody2D:
 
 
 ## 水池：冰把水面冻成桥，火把冰融回水
-func _add_freeze_pool(pos: Vector2, width: float = 300.0) -> Node2D:
+## water_drop > 0 时是"下沉水池"：水面比两侧地面低 water_drop，冻住后冰桥才抬到地面高度
+## drowns = true 时没冻住掉进水里直接死（而不是继续往下掉）
+## water_depth 是水体深度（水面往下多深 = 坑有多高），水底 = 水面 + water_depth
+func _add_freeze_pool(
+	pos: Vector2,
+	width: float = 300.0,
+	water_drop: float = 0.0,
+	drowns: bool = false,
+	water_depth: float = 90.0,
+) -> Node2D:
 	var node: Node2D = FREEZE_POOL_SCENE.instantiate() as Node2D
 	node.set("width", width)
+	node.set("water_drop", water_drop)
+	node.set("drowns", drowns)
+	node.set("water_depth", water_depth)
 	# ★ 必须先把位置摆好，再 add_child ★
 	# 因为池子 _ready() 里会建一块 AnimatableBody2D 冰桥；如果池子进树后才移动，
-	# 冰桥的物理体可能还留在 (0,0)，玩家就会直接掉进水里（第 5 关踩过的坑）。
+	# 冰桥的物理体可能还留在 (0,0)，玩家就会直接掉进水里（第 4 关踩过的坑）。
 	node.position = pos
 	game_layer.add_child(node)
 	return node
@@ -368,7 +395,7 @@ func _add_wind_zone(pos: Vector2, size: Vector2) -> Area2D:
 
 
 ## 风场：站进去会被持续往上托，用来"飞"上高台
-## lift_speed 默认 260（正常升力）；第 9 关高台边缘的"微弱风场"传 104（40%）
+## lift_speed 默认 260（正常升力）；第 8 关高台边缘的"微弱风场"传 104（40%）
 func _add_wind_field(pos: Vector2, size: Vector2, lift_speed: float = 260.0) -> Area2D:
 	var node: Area2D = WIND_FIELD_SCENE.instantiate() as Area2D
 	node.set("size", size)
@@ -442,7 +469,7 @@ func _add_fire_shooter(pos: Vector2, direction: float = -1.0) -> Area2D:
 
 
 ## 间歇火焰喷口：up=true 地火，false 天火；phase 用来错开节奏
-## triggered=true 时不走固定周期，改由压力板之类的信号调用 press()/release() 驱动（第 13 关的天火）
+## triggered=true 时不走固定周期，改由压力板之类的信号调用 press()/release() 驱动（第 2 关的天火）
 ## off_time 是"灭"的时长，配合固定周期用（默认 1.5 → 一个周期 2.9 秒）
 func _add_flame_jet(pos: Vector2, up: bool = true, phase: float = 0.0, length: float = 110.0,
 		triggered: bool = false, off_time: float = 1.5) -> Area2D:
@@ -457,10 +484,32 @@ func _add_flame_jet(pos: Vector2, up: bool = true, phase: float = 0.0, length: f
 	return node
 
 
-## 压力板：踩上去发 pressed，松开发 released（第 13 关用来点天花板火焰）
+## 压力板：踩上去发 pressed，松开发 released（第 2 关用来点天花板火焰）
 func _add_pressure_plate(pos: Vector2, width: float = 72.0) -> Area2D:
 	var node: Area2D = PRESSURE_PLATE_SCENE.instantiate() as Area2D
 	node.set("width", width)
+	node.position = pos
+	game_layer.add_child(node)
+	return node
+
+
+## 周期风门（方向二）：风带每 period 秒吹 blow_time 秒，只在吹的时候开门。
+## pos 是**门的中心**；风带自动贴在门左边（宽度 belt_size.x）。第 8 关高台右端用。
+func _add_wind_gate(pos: Vector2, door_size: Vector2 = Vector2(40, 100),
+		belt_size: Vector2 = Vector2(100, 100)) -> StaticBody2D:
+	var node: StaticBody2D = WIND_GATE_SCENE.instantiate() as StaticBody2D
+	node.set("door_size", door_size)
+	node.set("belt_size", belt_size)
+	node.position = pos
+	game_layer.add_child(node)
+	return node
+
+
+## 逆向风场：水平向左吹的气流（push 为负 = 目标速度往左偏），玩家要按住 D 顶过去。
+func _add_reverse_wind(pos: Vector2, size: Vector2, push: float = -80.0) -> Area2D:
+	var node: Area2D = REVERSE_WIND_SCENE.instantiate() as Area2D
+	node.set("size", size)
+	node.set("push", push)
 	node.position = pos
 	game_layer.add_child(node)
 	return node
@@ -496,7 +545,7 @@ func _register_surface(kind: String, center: Vector2, w: float, h: float, label:
 ## ★ 顺序很重要：先摆位置、先写 zone_size，再 add_child ★
 ##   death_zone.gd 的 _ready() 会按 zone_size 建碰撞形状，而 add_child() 是同步触发
 ##   _ready() 的。以前写成"先 add_child 再 setup"，形状就被建成了默认的 2400 宽，
-##   关卡两端掉下去死不了（第 10 关最后两块平台之间就是这么漏的）。
+##   关卡两端掉下去死不了（第 12 关最后两块平台之间就是这么漏的）。
 ##   现在 death_zone.setup() 自己也会重建形状，但这里的顺序仍然按"进树前配好"写，
 ##   免得以后有人把 setup() 的实现改回去又踩同一个坑。
 func _add_death_zone(y: float, from_x: float, to_x: float) -> Area2D:
@@ -644,5 +693,7 @@ func _on_pause_requested() -> void:
 func _on_pause_menu_closed() -> void:
 	_paused = false
 	_pause_menu = null
-	if get_tree() != null:
+	# 从暂停菜单点「主菜单」时，场景先切换、本节点已经离开场景树，
+	# 这时再调 get_tree() 会报 "Parameter data.tree is null"，所以先判断。
+	if is_inside_tree():
 		get_tree().paused = false

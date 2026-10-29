@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://byt1rxivc2ujx"
-path="res://.godot/imported/level13_vents.png-e8c7a86bff036ebae5cd2c647574097a.ctex"
+uid="uid://c5modgi81q47a"
+path="res://.godot/imported/第八关-回字路线.png-20235118b3473a08394da3fa02caa967.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/level13_vents.png"
-dest_files=["res://.godot/imported/level13_vents.png-e8c7a86bff036ebae5cd2c647574097a.ctex"]
+source_file="res://docs/screenshots/第八关-回字路线.png"
+dest_files=["res://.godot/imported/第八关-回字路线.png-20235118b3473a08394da3fa02caa967.ctex"]
 
 [params]
 

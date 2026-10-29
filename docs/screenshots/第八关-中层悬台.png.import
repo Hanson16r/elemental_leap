@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://u3dppoljdtpu"
-path="res://.godot/imported/第十三关-上层平台抬高.png-f1b4d63fd0236382281324adde56cb18.ctex"
+uid="uid://c7tp5ga38t35a"
+path="res://.godot/imported/第八关-中层悬台.png-71f9ef2d8a7c38326f6af47fec0505f9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/screenshots/第十三关-上层平台抬高.png"
-dest_files=["res://.godot/imported/第十三关-上层平台抬高.png-f1b4d63fd0236382281324adde56cb18.ctex"]
+source_file="res://docs/screenshots/第八关-中层悬台.png"
+dest_files=["res://.godot/imported/第八关-中层悬台.png-71f9ef2d8a7c38326f6af47fec0505f9.ctex"]
 
 [params]
 

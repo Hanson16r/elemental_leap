@@ -67,6 +67,8 @@ var _updraft_speed: float = 260.0
 var has_key: bool = false
 ## 脚下是不是冰面（冰面摩擦力低，会滑）
 var _on_ice: bool = false
+## 侧风：目标水平速度偏移（px/s，负 = 向左）。由 hazards/reverse_wind.gd 设置。
+var side_wind: float = 0.0
 
 ## 角色显示放大倍数。碰撞盒不变（判定还是原来的大小，视觉大一点更显眼）。
 ## 改了这里，AnimatedSprite2D 的 offset 也要跟着改，保证脚底对齐：
@@ -100,6 +102,31 @@ func get_spawn() -> Vector2:
 
 func is_dead() -> bool:
 	return _dead
+
+
+## 敌人用：判断玩家是不是“从上方踩下来”的。
+## 踩踏：玩家正在下落，且脚底还在敌人中心上方一点 → 双方都不受伤（史莱姆不会被打死）。
+## 其他方向（横向 / 从下往上）不满足这个条件，由敌人按“碰到即死”处理。
+func is_stomping_on(enemy: Node2D) -> bool:
+	if _dead or velocity.y <= 0.0:
+		return false
+
+	var half_h := 21.0
+	var shape: Shape2D = $CollisionShape2D.shape
+	if shape is CapsuleShape2D:
+		half_h = (shape as CapsuleShape2D).height * 0.5
+	elif shape is RectangleShape2D:
+		half_h = (shape as RectangleShape2D).size.y * 0.5
+
+	var feet := global_position.y + half_h
+	return feet < enemy.global_position.y + 6.0
+
+
+## 踩到敌人时被弹起。力度由敌人传入（普通跳的 0.6~0.8 倍）
+func bounce(up_speed: float) -> void:
+	if _dead:
+		return
+	velocity.y = -absf(up_speed)
 
 
 # ===================================================================== 元素系统（Day 4~7）
@@ -158,6 +185,11 @@ func set_updraft(v: bool, speed: float = 260.0) -> void:
 		_updraft_speed = speed
 
 
+## 逆向风场调用：设置目标速度偏移（负 = 向左吹）。离开时传 0 复位。
+func set_side_wind(offset: float) -> void:
+	side_wind = offset
+
+
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
@@ -210,7 +242,15 @@ func _physics_process(delta: float) -> void:
 		accel *= air_accel_ratio      # 空中转向慢一点 = 有一点惯性
 	elif _on_ice:
 		accel *= 0.15                 # 冰面：只有 15% 的摩擦力，会滑
-	velocity.x = move_toward(velocity.x, dir * max_speed, accel * delta)
+
+	# ---------- 侧风（逆向风场）----------
+	# side_wind 是"目标速度偏移"（px/s，负 = 向左），直接加进这一次的目标速度：
+	# 不按方向键会被吹到 side_wind；按住 D 只能达到 max_speed + side_wind，形成顶风。
+	# 必须合并成**一次** move_toward（两次调用会在两个目标之间来回挣）。
+	var target_x := dir * max_speed
+	if side_wind != 0.0:
+		target_x += side_wind
+	velocity.x = move_toward(velocity.x, target_x, accel * delta)
 
 	if dir != 0.0:
 		_facing = signf(dir)
@@ -332,6 +372,7 @@ func respawn_at(pos: Vector2) -> void:
 	_wind_speed = 0.0
 	in_updraft = false
 	_on_ice = false
+	side_wind = 0.0
 	$CollisionShape2D.set_deferred("disabled", false)
 	set_physics_process(true)
 	move_to_spawn(pos)

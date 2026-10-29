@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cj7b5eceqd4ho"
-path="res://.godot/imported/第九关-两段风场.png-7c2cdcd41eab026d42495956b7c7a37a.ctex"
+uid="uid://cbc540j0f8ehx"
+path="res://.godot/imported/第十二关-元素组合房间.png-7454adee3521f7f1982d2a8eb450abaa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/screenshots/第九关-两段风场.png"
-dest_files=["res://.godot/imported/第九关-两段风场.png-7c2cdcd41eab026d42495956b7c7a37a.ctex"]
+source_file="res://docs/screenshots/第十二关-元素组合房间.png"
+dest_files=["res://.godot/imported/第十二关-元素组合房间.png-7454adee3521f7f1982d2a8eb450abaa.ctex"]
 
 [params]
 

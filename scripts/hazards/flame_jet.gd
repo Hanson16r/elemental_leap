@@ -29,7 +29,7 @@ extends Area2D
 ## 相位（0~1 个周期），用来错开多个喷口
 @export var phase: float = 0.0
 
-# ---- 触发模式（2026-10-28 为第 13 关加）----
+# ---- 触发模式（2026-10-28 为第 2 关加）----
 ## true = 不走固定周期，由压力板等外部信号调用 press() / release() 控制
 @export var triggered: bool = false
 ## 踩下后多久着火

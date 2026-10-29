@@ -1,0 +1,6 @@
+﻿[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/hazards/reverse_wind.gd" id="1_rw"]
+
+[node name="ReverseWind" type="Area2D"]
+script = ExtResource("1_rw")

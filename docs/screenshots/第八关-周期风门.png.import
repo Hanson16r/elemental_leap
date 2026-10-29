@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3peqx307sqm"
-path="res://.godot/imported/level11_headroom.png-8d0f2bf43cc874b027d008a07b10155a.ctex"
+uid="uid://drxmrncx36wbv"
+path="res://.godot/imported/第八关-周期风门.png-064b9eba97a3048e14b6e791d60c62d9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/level11_headroom.png"
-dest_files=["res://.godot/imported/level11_headroom.png-8d0f2bf43cc874b027d008a07b10155a.ctex"]
+source_file="res://docs/screenshots/第八关-周期风门.png"
+dest_files=["res://.godot/imported/第八关-周期风门.png-064b9eba97a3048e14b6e791d60c62d9.ctex"]
 
 [params]
 

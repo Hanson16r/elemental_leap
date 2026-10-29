@@ -25,13 +25,11 @@ const LEVEL_SCENES := [
 	"res://scenes/levels/level_5.tscn",
 	"res://scenes/levels/level_6.tscn",
 	"res://scenes/levels/level_7.tscn",
-	"res://scenes/levels/level_8.tscn",
-	# 第 9 关「天空之城」、第 14 关「冰宫」用竖向风场垂直起飞，不是跳跃；
+	# 第 8 关「天空之城」、第 11 关「冰宫」用竖向风场垂直起飞，不是跳跃；
 	# 这个工具只算抛物线跳跃，所以这两关单独用真人试玩验收。
+	"res://scenes/levels/level_9.tscn",
 	"res://scenes/levels/level_10.tscn",
-	"res://scenes/levels/level_11.tscn",
 	"res://scenes/levels/level_12.tscn",
-	"res://scenes/levels/level_13.tscn",
 ]
 
 ## 安全系数：真实极限不该拿来设计关卡，要留操作和反应的余量。
@@ -42,13 +40,13 @@ const RUNUP := 12.0
 ## 下层地面在"上层平台"底下时，头顶至少要留的净空（像素）。
 ##
 ## 为什么单列一条：这个工具以前只算"能不能跳到对面"，不算"跳起来会不会撞头"。
-## 第 11 关就栽在这上面 —— 上层平台顶面 640、下层地面 780，中间只有 100，
+## 第 9 关就栽在这上面 —— 上层平台顶面 640、下层地面 780，中间只有 100，
 ## 玩家在下层一跳就顶到平台底面，根本躲不开史莱姆。
 ## 真实需要多少：
 ##   · 碰撞盒高 42 + 摸高 92 = 134，低于这个直接撞；
 ##   · 精灵放大 1.8 倍后视觉高度约 86，86 + 92 ≈ 178，低于这个"人能过去但头穿模"；
 ##   · 再留 10 余量 → 189，就按这个当红线。
-## 低天花板不一定挡主线（例如第 13 关是故意压低的"火雨天井"），
+## 低天花板不一定挡主线（例如第 2 关是故意压低的"火雨天井"），
 ## 所以这里只打 WARN，不判失败。
 const HEADROOM_MIN := 189.0
 ## 物理帧步长，和项目设置里的 60 tick/秒一致
@@ -290,7 +288,7 @@ func _check_level(path: String) -> void:
 	# 头顶净空：下层站在地板上起跳，会不会撞到上层的底面
 	_check_headroom(surfaces, reached)
 
-	# 掉落死亡区有没有盖住整关（第 10 关的"缝隙掉下去死不了"就是这里漏的）
+	# 掉落死亡区有没有盖住整关（第 12 关的"缝隙掉下去死不了"就是这里漏的）
 	_check_death_zone(level, surfaces)
 
 	# 打印断点诊断，只打印前若干条，避免刷屏
@@ -404,10 +402,10 @@ func _check_headroom(surfaces: Array, reached: Dictionary) -> void:
 ## 掉落死亡区必须把**整关所有落脚面**的水平范围都盖住。
 ##
 ## ★ 这条检查是补上一个真实事故的 ★
-##   第 10 关"最后一块平台和倒数第二块平台之间掉下去不会死"：
+##   第 12 关"最后一块平台和倒数第二块平台之间掉下去不会死"：
 ##   death_zone.tscn 的 CollisionShape2D 里没有 shape，形状是 _ready() 里按 zone_size 建的，
 ##   而关卡基类当时先 add_child() 再 setup(size) —— add_child() 同步触发 _ready()，
-##   形状就永远定在了默认的 2400 宽。第 10 关宽 3400，最右边 550 像素全是无底洞。
+##   形状就永远定在了默认的 2400 宽。第 12 关宽 3400，最右边 550 像素全是无底洞。
 ##   现在形状的建法修了，这条检查负责防止它再退回去。
 func _check_death_zone(level: Node, surfaces: Array) -> void:
 	var zone: Node2D = null

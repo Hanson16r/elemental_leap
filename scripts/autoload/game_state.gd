@@ -6,7 +6,10 @@ extends Node
 ## （编辑器里跑的时候可能叫 Godot，导出后会变成游戏名）
 
 const SAVE_PATH := "user://progress.cfg"
-const TOTAL_LEVELS := 14
+## 现在是 12 关：2026-10-28 把第 1、2 关合并成第 1 关，并把「终章：元素城堡」挪到最后。
+const TOTAL_LEVELS := 12
+## 存档格式版本。3 = 合并第 1、2 关 + 终章挪到最后之后的编号。
+const SAVE_VERSION := 3
 
 ## 已解锁到第几关（1 起算）
 var unlocked_level: int = 1
@@ -51,12 +54,23 @@ func load_progress() -> void:
 	best_times = cfg.get_value("progress", "best_times", {})
 	best_coins = cfg.get_value("progress", "best_coins", {})
 	coin_totals = cfg.get_value("progress", "coin_totals", {})
+	var version := int(cfg.get_value("meta", "version", 1))
+	# 旧存档逐步迁移到当前编号：每一步只搬关号，不动成绩本身。
+	#  v1→v2：删掉第 4 关「冰之谷」，后面的关号前移一位。
+	#  v2→v3：合并第 1、2 关，终章挪到最后。
+	if version < 2:
+		_migrate_v1_to_v2()
+	if version < 3:
+		_migrate_v2_to_v3()
+	if version < SAVE_VERSION:
+		save_progress()
 	unlocked_level = clampi(unlocked_level, 1, TOTAL_LEVELS)
 	print("[GameState] 读到存档：已解锁到第 ", unlocked_level, " 关")
 
 
 func save_progress() -> void:
 	var cfg := ConfigFile.new()
+	cfg.set_value("meta", "version", SAVE_VERSION)
 	cfg.set_value("progress", "unlocked_level", unlocked_level)
 	cfg.set_value("progress", "best_times", best_times)
 	cfg.set_value("progress", "best_coins", best_coins)
@@ -74,6 +88,65 @@ func reset_progress() -> void:
 	best_coins = {}
 	coin_totals = {}
 	save_progress()
+
+
+## 旧存档（v1）→ 新编号（v2）：
+## 第 4 关「冰之谷」已删除，原来第 5~14 关现在的编号是第 4~13 关。
+## 已解锁进度和每关成绩都整体前移一位，删掉那关自己的记录。
+func _migrate_v1_to_v2() -> void:
+	const DELETED_LEVEL := 4
+	if unlocked_level > DELETED_LEVEL:
+		unlocked_level -= 1
+	best_times = _shift_level_keys(best_times, DELETED_LEVEL)
+	best_coins = _shift_level_keys(best_coins, DELETED_LEVEL)
+	coin_totals = _shift_level_keys(coin_totals, DELETED_LEVEL)
+
+
+## 把字典里 "5"~"14" 这样的关号键整体减 1，并丢掉被删掉那一关的键。
+static func _shift_level_keys(src: Dictionary, deleted_level: int) -> Dictionary:
+	var out: Dictionary = {}
+	for key in src.keys():
+		var level := int(str(key))
+		if level == deleted_level:
+			continue
+		var new_key := str(level - 1) if level > deleted_level else str(level)
+		out[new_key] = src[key]
+	return out
+
+
+## 旧存档（v2）→ 新编号（v3）：
+##   · 第 1、2 关合并成新的第 1 关（旧成绩没法沿用，直接丢掉）；
+##   · 「火雨」从第 12 关挪到第 2 关；
+##   · 「终章：元素城堡」从第 9 关挪到最后（第 12 关）；
+##   · 原第 3~8 关不动（仍是 3~8），原第 10、11 关前移成 9、10，原第 13 关前移成 11。
+func _migrate_v2_to_v3() -> void:
+	# 每个旧关号在 v3 里的位置。1、2 关合并后没有单独记录，不列在表里。
+	const RECORD_MAP := {
+		3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8,
+		9: 12, 10: 9, 11: 10, 12: 2, 13: 11,
+	}
+	best_times = _map_level_keys(best_times, RECORD_MAP)
+	best_coins = _map_level_keys(best_coins, RECORD_MAP)
+	coin_totals = _map_level_keys(coin_totals, RECORD_MAP)
+	# 解锁进度按“已通关数量”顺移：第 1、2 关合并少了一关，其余保持原来的先后。
+	# 旧档 1~2 关没完整打通 → 从新第 1 关开始；3 关以上 → 新关号比旧关号小 1。
+	unlocked_level = _map_unlocked_v3(unlocked_level)
+
+
+## 旧档的"下一关"换成新编号。第 1、2 关合并后总数少 1，所以从第 3 关起整体 -1。
+static func _map_unlocked_v3(level: int) -> int:
+	return maxi(1, mini(level - 1, 12))
+
+
+## 按映射表搬运字典里的关号键；没有映射的键（例如被合并掉的第 1、2 关）就丢弃。
+static func _map_level_keys(src: Dictionary, mapping: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for key in src.keys():
+		var level := int(str(key))
+		if not mapping.has(level):
+			continue
+		out[str(mapping[level])] = src[key]
+	return out
 
 
 func best_time(level: int) -> float:

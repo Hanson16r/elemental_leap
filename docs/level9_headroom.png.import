@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cbc540j0f8ehx"
-path="res://.godot/imported/第十关-元素组合房间.png-df3148788ff185647fbf95b57dbcf694.ctex"
+uid="uid://c3peqx307sqm"
+path="res://.godot/imported/level9_headroom.png-50584aec835aa00618264d16981c395c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/screenshots/第十关-元素组合房间.png"
-dest_files=["res://.godot/imported/第十关-元素组合房间.png-df3148788ff185647fbf95b57dbcf694.ctex"]
+source_file="res://docs/level9_headroom.png"
+dest_files=["res://.godot/imported/level9_headroom.png-50584aec835aa00618264d16981c395c.ctex"]
 
 [params]
 

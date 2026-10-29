@@ -20,7 +20,7 @@ var _level_buttons: Array[Button] = []
 
 func _ready() -> void:
 	_title.text = "冰塔跳跃"
-	_subtitle.text = "14 个关卡：火/水/冰/风/岩石的元素解谜，以及金币、敌人、间歇火焰、滑冰和钥匙门。"
+	_subtitle.text = "12 个关卡：火/水/冰/风/岩石的元素解谜，以及金币、敌人、间歇火焰、滑冰和钥匙门。"
 	_tip.text = "A / D 或 ← → 移动　空格跳跃　R 重开　Esc 暂停"
 	_start_btn.pressed.connect(_start)
 	_continue_btn.pressed.connect(_continue)
@@ -57,7 +57,7 @@ func _build_level_select() -> void:
 		row.add_child(b)
 		_level_buttons.append(b)
 
-	# 只在编辑器里出现的调试按钮：一键解锁 5 关，方便试玩第 4/5 关。
+	# 只在编辑器里出现的调试按钮：一键解锁全部关卡，方便试玩后面的关。
 	# 导出成 release（网页/exe）后 OS.is_debug_build() 为 false，这个按钮不会出现。
 	if OS.is_debug_build():
 		var dbg := Button.new()

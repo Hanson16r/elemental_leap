@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ve3ml7kewxb"
-path="res://.godot/imported/第十一关-延长后的河流.png-3979c4f78bef86bde86f7f35cffd1b1c.ctex"
+uid="uid://ryfuun73t24k"
+path="res://.godot/imported/第八关-周期风门-关闭.png-83fb7ee5a38827dd9f2b9161fad0b252.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/screenshots/第十一关-延长后的河流.png"
-dest_files=["res://.godot/imported/第十一关-延长后的河流.png-3979c4f78bef86bde86f7f35cffd1b1c.ctex"]
+source_file="res://docs/screenshots/第八关-周期风门-关闭.png"
+dest_files=["res://.godot/imported/第八关-周期风门-关闭.png-83fb7ee5a38827dd9f2b9161fad0b252.ctex"]
 
 [params]
 
