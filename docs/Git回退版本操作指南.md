@@ -1,7 +1,7 @@
 # Git 回退版本操作指南
 
-> 适用项目：`ice-tower-jump`（Godot 4.7.2）
-> 远端：`https://github.com/Hanson16r/ice-tower-jump.git` · 分支：`main`
+> 适用项目：元素之境（目录仍叫 `ice-tower-jump`，Godot 4.7.2）
+> 远端：`https://github.com/Hanson16r/elemental_leap.git` · 分支：`main`
 > 环境：Windows + PowerShell（文中命令可直接粘贴到 VS Code 终端或 PowerShell）
 > 最后更新：2026-10-28
 
@@ -133,7 +133,7 @@ git worktree list
 浏览器打开：
 
 ```
-https://github.com/Hanson16r/ice-tower-jump/archive/7eaf237.zip
+https://github.com/Hanson16r/elemental_leap/archive/7eaf237.zip
 ```
 
 或者：仓库首页 → **Commits** → 点某个提交 → 右上角 **Download ZIP**。
@@ -142,7 +142,7 @@ https://github.com/Hanson16r/ice-tower-jump/archive/7eaf237.zip
 ### 方法 C：重新 clone 一份
 
 ```powershell
-git clone https://github.com/Hanson16r/ice-tower-jump.git ice-tower-jump-旧版
+git clone https://github.com/Hanson16r/elemental_leap.git ice-tower-jump-旧版
 cd ice-tower-jump-旧版
 git switch --detach 7eaf237
 ```
