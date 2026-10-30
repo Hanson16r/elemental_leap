@@ -2,10 +2,15 @@ extends Node
 ## 【单例 / 游戏进度存档】—— 对应计划 Day 10「UI 与流程」+ 关键技术实现第 9 条「保存进度」
 ##
 ## 用 ConfigFile 存一个小文件，比手写 json 省事。
-## 存档位置：Windows 上是 %APPDATA%\Godot\app_userdata\冰塔跳跃 Demo\progress.cfg
-## （编辑器里跑的时候可能叫 Godot，导出后会变成游戏名）
+## 存档位置（跟着 project.godot 里的 config/name 走）：
+## Windows 上是 %APPDATA%\Godot\app_userdata\元素之境\progress.cfg
+## （编辑器里跑的时候目录名可能还是旧项目名，见下面的 _migrate_legacy_save()）
 
 const SAVE_PATH := "user://progress.cfg"
+## 2026-10-30 项目名从「冰塔跳跃 Demo」改成「元素之境」。
+## user:// 是跟着项目名走的，改名后老存档会“消失”（其实是换了目录）。
+## 这里记下旧目录，第一次读不到存档时从那里搬一次，老玩家的进度不至于丢。
+const LEGACY_SAVE_SUBDIR := "Godot/app_userdata/冰塔跳跃 Demo"
 ## 关卡出场顺序：第 i 个元素 = 第 i+1 关加载哪个关卡文件（level_<编号>.tscn）。
 ## 想调整关卡先后顺序只改这一行，把编号换个位置即可：
 ##   例：想先玩「天空之城」(4)、再玩「分岔」(3) → [1, 2, 4, 3, 5, ...]
@@ -50,9 +55,33 @@ func _ready() -> void:
 	load_progress()
 
 
+## 项目改名（冰塔跳跃 Demo → 元素之境）后，user:// 目录也换了。
+## 新目录没有存档、旧目录有的话，拷一份过来，只搬一次（新文件存在就不动）。
+## 找不到旧目录就静悄悄什么也不做 —— 全新机器上这是正常情况。
+func _migrate_legacy_save() -> void:
+	if FileAccess.file_exists(SAVE_PATH):
+		return
+	var data_dir := OS.get_data_dir()
+	if data_dir.is_empty():
+		return
+	var legacy := data_dir.path_join(LEGACY_SAVE_SUBDIR).path_join("progress.cfg")
+	if not FileAccess.file_exists(legacy):
+		return
+	var bytes := FileAccess.get_file_as_bytes(legacy)
+	if bytes.is_empty():
+		return
+	var out := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if out == null:
+		return
+	out.store_buffer(bytes)
+	out.close()
+	print("[GameState] 已从旧项目名目录搬来存档：", legacy)
+
+
 # ===================================================================== 存档读写
 
 func load_progress() -> void:
+	_migrate_legacy_save()
 	var cfg := ConfigFile.new()
 	var err := cfg.load(SAVE_PATH)
 	if err != OK:

@@ -35,10 +35,28 @@ func _ready() -> void:
 	_picked = Characters.selected_id()
 	_fit_grid()
 	_build_cards()
+	_style_buttons()
 	_confirm_btn.pressed.connect(_on_confirm)
 	_back_btn.pressed.connect(_on_back)
 	_apply_card_styles()
 	_refresh_hint()
+
+
+## 确认键刷成亮蓝色，让它看起来就是"主按钮"（其余按钮保持默认暗色）
+func _style_buttons() -> void:
+	_confirm_btn.add_theme_stylebox_override("normal", _button_box(Color(0.15, 0.42, 0.62), 0.0))
+	_confirm_btn.add_theme_stylebox_override("hover", _button_box(Color(0.15, 0.42, 0.62), 0.10))
+	_confirm_btn.add_theme_stylebox_override("pressed", _button_box(Color(0.15, 0.42, 0.62), -0.08))
+	_confirm_btn.add_theme_color_override("font_color", Color(0.92, 0.97, 1.0))
+
+
+func _button_box(base: Color, brighten: float) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = base.lightened(brighten) if brighten >= 0.0 else base.darkened(-brighten)
+	sb.border_color = Color(0.55, 0.85, 1.0)
+	sb.set_border_width_all(2)
+	sb.set_corner_radius_all(10)
+	return sb
 
 
 ## 卡片行宽跟着 ROSTER 的张数算：加/删角色只改 character_db.gd，这里不用动。
@@ -95,6 +113,8 @@ func _make_label(text: String, font_size: int, color: Color,
 	label.add_theme_color_override("font_color", color)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# 关键：文字不能吃掉鼠标事件，否则点在名字上就点不动卡片按钮了
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 锚点全部拉到底边，再往里收 4 像素，这样文字永远贴着卡片底部
 	label.anchor_left = 0.0
 	label.anchor_right = 1.0
@@ -144,25 +164,62 @@ func _card_box(selected: bool, brighten: float) -> StyleBoxFlat:
 # ===================================================================== 交互
 
 func _on_card_pressed(id: String) -> void:
-	Sfx.play_click()
+	_pick(id)
+
+
+## 选一个角色：刷卡片边框 + 刷顶部那行字（真正写入存档要按确认键）
+func _pick(id: String) -> void:
 	if _picked == id:
 		return
 	_picked = id
+	Sfx.play_click()
 	_apply_card_styles()
 	_refresh_hint()
 
 
-## 顶部那行字 + 确定按钮上的名字，跟着当前选中的角色变
+## ← / → 在角色之间挪一格（到头上绕回去）
+func _step_pick(delta: int) -> void:
+	var count := Characters.ROSTER.size()
+	if count == 0:
+		return
+	var index := 0
+	for i in count:
+		if str(Characters.ROSTER[i]["id"]) == _picked:
+			index = i
+			break
+	index = (index + delta + count) % count
+	_pick(str(Characters.ROSTER[index]["id"]))
+
+
+## 顶部那行字 + 确认键上的名字，跟着当前选中的角色变
 func _refresh_hint() -> void:
 	var entry := Characters.get_entry_or_default(_picked)
-	_hint.text = "当前选择：%s —— %s" % [str(entry["name"]), str(entry["desc"])]
-	_confirm_btn.text = "就选「%s」" % str(entry["name"])
+	_hint.add_theme_color_override("font_color", Color(0.63, 0.75, 0.88))
+	_hint.text = "已选中：%s —— %s　（点下面的确认键，或按 Enter）" % [
+		str(entry["name"]), str(entry["desc"])]
+	_confirm_btn.text = "确认选择：%s" % str(entry["name"])
 
 
+## 确认 = 真正落地：写进 GameState → 存档 → 再从磁盘读回来核对一遍
 func _on_confirm() -> void:
 	Sfx.play_click()
-	Characters.select(_picked)      # 写进 GameState 并存档
+	if not Characters.select(_picked):
+		_show_error("这个角色不存在，换一个吧。")
+		return
+
+	GameState.load_progress()          # 从 user://progress.cfg 重新读，确认真的写进去了
+	if GameState.character_id != _picked:
+		_show_error("存档写入失败，重启后会变回旧角色（看看控制台的警告）")
+		push_warning("[选择角色] 存档写入失败，character 仍为 '%s'" % GameState.character_id)
+		return
+
+	print("[选择角色] 已保存：%s（%s）" % [str(Characters.selected_entry()["name"]), _picked])
 	_back_to_menu()
+
+
+func _show_error(message: String) -> void:
+	_hint.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45))
+	_hint.text = message
 
 
 func _on_back() -> void:
@@ -177,7 +234,21 @@ func _back_to_menu() -> void:
 
 
 ## Esc = 返回（不保存这次的选择）
+## ← / → = 在几个角色之间切换；Enter = 确认
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_on_back()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_left"):
+		_step_pick(-1)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_right"):
+		_step_pick(1)
+		get_viewport().set_input_as_handled()
+		return
+	# 有按钮抢到键盘焦点时 Enter 归那个按钮，别重复触发
+	if event.is_action_pressed("ui_accept") and get_viewport().gui_get_focus_owner() == null:
+		_on_confirm()
 		get_viewport().set_input_as_handled()

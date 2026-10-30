@@ -14,8 +14,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="冰塔跳跃 Demo"
-config/description="2D 平台跳跃小游戏 · 12 个关卡 · Godot 4"
+config/name="元素之境"
+config/description="2D 平台跳跃 + 元素解谜 · 5 关 · Godot 4"
 run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"

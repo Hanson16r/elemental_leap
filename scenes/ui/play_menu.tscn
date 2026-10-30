@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/play_menu.gd" id="1_play"]
 [ext_resource type="Script" path="res://scripts/falling_snow.gd" id="2_snow"]
+[ext_resource type="Script" path="res://scripts/ui/menu_fx.gd" id="3_fx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_showcase"]
 bg_color = Color(0.09, 0.13, 0.21, 0.85)
@@ -28,10 +29,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.055, 0.078, 0.133, 1)
+color = Color(0.047, 0.078, 0.145, 1)
 
 [node name="Snow" type="Node2D" parent="."]
 script = ExtResource("2_snow")
+
+[node name="Fx" type="Node2D" parent="."]
+script = ExtResource("3_fx")
 
 [node name="Root" type="Control" parent="."]
 anchors_preset = 15
@@ -54,7 +58,10 @@ theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="Root/Box"]
 theme_override_font_sizes/font_size = 44
-theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
+theme_override_colors/font_color = Color(0.725, 0.894, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.055, 0.129, 0.251, 0.85)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
 text = "开始游戏"
 horizontal_alignment = 1
 

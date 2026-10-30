@@ -256,6 +256,23 @@ func _add_rock_floor(pos: Vector2, w: float = 90.0, h: float = 40.0) -> Animatab
 	return body
 
 
+## 空中悬浮台阶：给"风场顶上"当落脚点用（第 5 关第三阶段）。
+## 和普通平台一样能站、能挡人，但**故意不登记落脚面**：
+## 验证器不建模风场，登记进去它只会从平地出生点找不到路，白报一条"到不了的平台"。
+func _add_floating_step(pos: Vector2, w: float = 70.0, h: float = 16.0) -> AnimatableBody2D:
+	var body: AnimatableBody2D = PLATFORM_SCENE.instantiate()
+	game_layer.add_child(body)
+	body.global_position = pos
+	body.setup(Vector2(w, h))
+	# 青灰色，和草地平台区分开：一眼看出"这是浮空的"
+	var tint := Color(0.42, 0.50, 0.66)
+	for node_name in ["Visual", "Cap"]:
+		var poly := body.get_node_or_null(node_name) as Polygon2D
+		if poly != null:
+			poly.color = tint
+	return body
+
+
 ## 加一块会消失再出现的平台（Day 9）
 func _add_blink_platform(pos: Vector2, w: float = 160.0, phase: float = 0.0) -> AnimatableBody2D:
 	var node: AnimatableBody2D = BLINK_SCENE.instantiate()

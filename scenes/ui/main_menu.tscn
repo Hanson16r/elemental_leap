@@ -1,7 +1,22 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/falling_snow.gd" id="2_snow"]
+[ext_resource type="Script" path="res://scripts/ui/menu_fx.gd" id="3_fx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settings"]
+bg_color = Color(0.067, 0.106, 0.174, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.263, 0.365, 0.494, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 18
 
 [node name="MainMenu" type="CanvasLayer"]
 layer = 40
@@ -14,10 +29,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.055, 0.078, 0.133, 1)
+color = Color(0.047, 0.078, 0.145, 1)
 
 [node name="Snow" type="Node2D" parent="."]
+modulate = Color(1, 1, 1, 0.5)
 script = ExtResource("2_snow")
+
+[node name="Fx" type="Node2D" parent="."]
+script = ExtResource("3_fx")
 
 [node name="Root" type="Control" parent="."]
 anchors_preset = 15
@@ -27,52 +46,208 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Box" type="VBoxContainer" parent="Root"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -92.0
-offset_right = 300.0
-offset_bottom = 92.0
+[node name="Stack" type="VBoxContainer" parent="Root"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 14
+mouse_filter = 2
+theme_override_constants/separation = 0
 
-[node name="Title" type="Label" parent="Root/Box"]
-theme_override_font_sizes/font_size = 58
-theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
-text = "冰塔跳跃"
+[node name="TopPad" type="Control" parent="Root/Stack"]
+custom_minimum_size = Vector2(0, 130)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleWrap" type="Control" parent="Root/Stack"]
+custom_minimum_size = Vector2(0, 78)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Root/Stack/TitleWrap"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.725, 0.894, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.055, 0.129, 0.251, 0.85)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 60
+text = "元素之境"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Root/Box"]
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.63, 0.75, 0.88, 1)
-text = "在悬浮平台间跳跃上升，躲开蓝色火焰，抵达终点旗。"
-horizontal_alignment = 1
-autowrap_mode = 3
+[node name="SubGap" type="Control" parent="Root/Stack"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
 
-[node name="StartButton" type="Button" parent="Root/Box"]
-custom_minimum_size = Vector2(0, 52)
-theme_override_font_sizes/font_size = 24
-text = "开始游戏"
-
-[node name="QuitButton" type="Button" parent="Root/Box"]
-custom_minimum_size = Vector2(0, 44)
+[node name="Subtitle" type="Label" parent="Root/Stack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.569, 0.714, 0.843, 1)
 theme_override_font_sizes/font_size = 20
-text = "退出"
+text = "掌握元素之力，探索奇幻秘境"
+horizontal_alignment = 1
+
+[node name="BadgeGap" type="Control" parent="Root/Stack"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Badges" type="HBoxContainer" parent="Root/Stack"]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 22
+
+[node name="BtnGap" type="Control" parent="Root/Stack"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Root/Stack"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 12
+
+[node name="StartButton" type="Button" parent="Root/Stack/Buttons"]
+custom_minimum_size = Vector2(360, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "开始冒险"
+
+[node name="SettingsButton" type="Button" parent="Root/Stack/Buttons"]
+custom_minimum_size = Vector2(360, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "设置"
+
+[node name="QuitButton" type="Button" parent="Root/Stack/Buttons"]
+custom_minimum_size = Vector2(360, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "退出游戏"
+
+[node name="BottomPad" type="Control" parent="Root/Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="Tip" type="Label" parent="Root"]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -56.0
+offset_top = -46.0
+offset_bottom = -18.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_colors/font_color = Color(0.471, 0.584, 0.71, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.5, 0.62, 0.75, 1)
-text = "A / D 移动　空格跳跃　R 重开　Esc 暂停"
+text = "A / D 或 ← → 移动　空格跳跃　R 重开　Esc 暂停"
 horizontal_alignment = 1
+
+[node name="Settings" type="Control" parent="Root"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Root/Settings"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.035, 0.06, 0.66)
+
+[node name="Center" type="CenterContainer" parent="Root/Settings"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Settings/Center"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_settings")
+
+[node name="Margin" type="MarginContainer" parent="Root/Settings/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 24
+
+[node name="Box" type="VBoxContainer" parent="Root/Settings/Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="Root/Settings/Center/Panel/Margin/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.725, 0.894, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "设置"
+horizontal_alignment = 1
+
+[node name="VolumeRow" type="HBoxContainer" parent="Root/Settings/Center/Panel/Margin/Box"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Label" type="Label" parent="Root/Settings/Center/Panel/Margin/Box/VolumeRow"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.753, 0.827, 0.91, 1)
+theme_override_font_sizes/font_size = 18
+text = "音量"
+vertical_alignment = 1
+
+[node name="VolumeSlider" type="HSlider" parent="Root/Settings/Center/Panel/Margin/Box/VolumeRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 0.5
+
+[node name="VolumeValue" type="Label" parent="Root/Settings/Center/Panel/Margin/Box/VolumeRow"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.569, 0.714, 0.843, 1)
+theme_override_font_sizes/font_size = 16
+text = "50%"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="FullRow" type="HBoxContainer" parent="Root/Settings/Center/Panel/Margin/Box"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Label" type="Label" parent="Root/Settings/Center/Panel/Margin/Box/FullRow"]
+custom_minimum_size = Vector2(52, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.753, 0.827, 0.91, 1)
+theme_override_font_sizes/font_size = 18
+text = "显示"
+vertical_alignment = 1
+
+[node name="FullButton" type="Button" parent="Root/Settings/Center/Panel/Margin/Box/FullRow"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 17
+text = "切换到全屏"
+
+[node name="BackButton" type="Button" parent="Root/Settings/Center/Panel/Margin/Box"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "返回"

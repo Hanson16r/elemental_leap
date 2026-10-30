@@ -40,6 +40,7 @@ const DEFAULT_ID := "mond_girl"
 ## desc  卡片下面那行小字
 ## sheet 行走图路径
 ## group / block  取这张图的哪一小块（见文件开头说明）
+## 想改角色名字 / 那句简介：直接改下面每条的 "name" / "desc"，别的都不用动。
 const ROSTER: Array = [
 	{
 		"id": "li_yue_boy",
