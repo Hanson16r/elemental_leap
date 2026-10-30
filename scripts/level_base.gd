@@ -19,7 +19,7 @@ const PAUSE_SCENE: PackedScene = preload("res://scenes/ui/pause_menu.tscn")
 const PLAYER_SCENE: PackedScene = preload("res://scenes/player.tscn")
 const SNOW_SCENE: PackedScene = preload("res://scenes/world/snow.tscn")
 ## 森林背景：从参考图右侧裁出来的（左侧有参考图里的角色，要避开）
-const FOREST_BG: Texture2D = preload("res://scripts/character/forest_bg.png")
+const FOREST_BG: Texture2D = preload("res://final_assets/backgrounds/forest_bg.png")
 
 const PLATFORM_SCENE: PackedScene = preload("res://scenes/world/platform.tscn")
 const BLINK_SCENE: PackedScene = preload("res://scenes/hazards/blink_platform.tscn")
@@ -178,7 +178,9 @@ func _add_background() -> void:
 	rect.stretch_mode = TextureRect.STRETCH_SCALE
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	background_layer.add_child(rect)
-	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# 必须用 set_anchors_and_offsets_preset：set_anchors_preset 只改锚点、偏移量
+	# 按"保持当前尺寸"调整，而刚 new 出来的 TextureRect 是 0×0，会被压成 0 尺寸看不见。
+	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 
 func _spawn_player() -> void:
@@ -244,12 +246,13 @@ func _add_ice_platform(pos: Vector2, w: float = 200.0, h: float = 24.0) -> Anima
 ## 第 12 关断层口那处"特殊岩石地面"用它 —— 玩家一眼能看出这里和别的平台不一样。
 func _add_rock_floor(pos: Vector2, w: float = 90.0, h: float = 40.0) -> AnimatableBody2D:
 	var body := _add_platform(pos, w, h)
-	var visual := body.get_node_or_null("Visual") as Polygon2D
-	if visual != null:
-		visual.color = Color(0.42, 0.38, 0.34)
-	var top := body.get_node_or_null("Top") as Line2D
-	if top != null:
-		top.default_color = Color(0.62, 0.56, 0.48)
+	# 美术接入后平台是瓦片贴图：颜色会和纹理相乘，所以砖体和草皮一起染成岩石色，
+	# 既保留瓦片纹理，又和普通草地平台区分得开。
+	var tint := Color(0.42, 0.38, 0.34)
+	for node_name in ["Visual", "Cap"]:
+		var poly := body.get_node_or_null(node_name) as Polygon2D
+		if poly != null:
+			poly.color = tint
 	return body
 
 

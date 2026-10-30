@@ -10,6 +10,14 @@ extends AnimatableBody2D
 ##
 ## 玩家那侧的配合在 scripts/player.gd 的 ③ 处。
 
+## 外观（2026-10-30 美术接入）：和固定平台用同一套瓦片，玩家不会误判哪块会动。
+## 常量必须和 scripts/world/platform.gd 保持一致。
+const CAP_TEX: Texture2D = preload("res://final_assets/tiles/grass_cap.png")
+const BODY_TEX: Texture2D = preload("res://final_assets/tiles/stone_body.png")
+const TILE: int = 16
+const TILE_SCALE: int = 2
+const CAP_H: int = TILE * TILE_SCALE
+
 @export var offset: Vector2 = Vector2(200, 0)   # 相对初始位置的往返幅度
 @export var speed: float = 70.0                 # 像素/秒
 @export var width: float = 160.0
@@ -52,14 +60,39 @@ func _apply_geometry() -> void:
 	var col := get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if col != null:
 		col.shape = shape
+
+	# hw / hh 必须在 if 外面声明：下面的 Cap 分支也要用
+	var hw := width * 0.5
+	var hh := thickness * 0.5
+
+	# ① 砖块体
 	var vis := get_node_or_null("Visual") as Polygon2D
 	if vis != null:
-		var hw := width * 0.5
-		var hh := thickness * 0.5
 		vis.polygon = PackedVector2Array([
 			Vector2(-hw, -hh), Vector2(hw, -hh), Vector2(hw, hh), Vector2(-hw, hh),
 		])
-		vis.color = Color(0.55, 0.72, 0.88)
+		vis.texture = BODY_TEX
+		vis.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		vis.texture_scale = Vector2(1.0 / TILE_SCALE, 1.0 / TILE_SCALE)
+		vis.color = Color.WHITE
+
+	# ② 草皮顶（纵向锁死一格，见 platform.gd 的说明）
+	var cap := get_node_or_null("Cap") as Polygon2D
+	if cap != null:
+		var cap_h: float = minf(thickness, float(CAP_H))
+		cap.polygon = PackedVector2Array([
+			Vector2(-hw, -hh), Vector2(hw, -hh),
+			Vector2(hw, -hh + cap_h), Vector2(-hw, -hh + cap_h),
+		])
+		cap.texture = CAP_TEX
+		cap.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		var u_w: float = width / float(TILE_SCALE)
+		var v_h: float = cap_h / float(TILE_SCALE)
+		cap.uv = PackedVector2Array([
+			Vector2(0, 0), Vector2(u_w, 0),
+			Vector2(u_w, v_h), Vector2(0, v_h),
+		])
+		cap.color = Color.WHITE
 
 
 func _physics_process(delta: float) -> void:

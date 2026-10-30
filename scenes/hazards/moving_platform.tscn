@@ -9,7 +9,11 @@ sync_to_physics = true
 script = ExtResource("1_moving")
 
 [node name="Visual" type="Polygon2D" parent="."]
+texture_repeat = 2
 polygon = PackedVector2Array(-80, -11, 80, -11, 80, 11, -80, 11)
-color = Color(0.55, 0.72, 0.88, 1)
+
+[node name="Cap" type="Polygon2D" parent="."]
+texture_repeat = 2
+polygon = PackedVector2Array(-80, -11, 80, -11, 80, -4, -80, -4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

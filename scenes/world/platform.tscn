@@ -8,12 +8,11 @@ collision_mask = 0
 script = ExtResource("1_platform")
 
 [node name="Visual" type="Polygon2D" parent="."]
+texture_repeat = 2
 polygon = PackedVector2Array(-100, -12, 100, -12, 100, 12, -100, 12)
-color = Color(0.42, 0.55, 0.72, 1)
 
-[node name="Top" type="Line2D" parent="."]
-points = PackedVector2Array(-100, -12, 100, -12)
-width = 2.0
-default_color = Color(0.75, 0.9, 1, 1)
+[node name="Cap" type="Polygon2D" parent="."]
+texture_repeat = 2
+polygon = PackedVector2Array(-100, -12, 100, -12, 100, 4, -100, 4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

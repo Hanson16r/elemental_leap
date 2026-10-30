@@ -10,6 +10,18 @@ extends AnimatableBody2D
 ## 注意：碰撞形状必须在代码里现建（make_unique），
 ## 否则同一个 .tscn 实例化出来的所有平台会共享同一个形状资源，
 ## 改一块的宽度，全都会被改掉——这是新手最容易踩的坑之一。
+##
+## 外观（2026-10-30 美术接入）：Visual 铺 16px 砖块瓦片 + 顶部 Cap 铺草皮瓦片。
+## 纹理尺寸、平铺倍率、草皮高度都在下面这组常量里，换主题只改这里。
+
+## 草皮顶面（横向无缝）、砖块体（四向无缝）
+const CAP_TEX: Texture2D = preload("res://final_assets/tiles/grass_cap.png")
+const BODY_TEX: Texture2D = preload("res://final_assets/tiles/stone_body.png")
+const TILE: int = 16            # 素材原始瓦片尺寸（像素）
+const TILE_SCALE: int = 2       # 1=16px/格，2=32px/格（和 1.8 倍角色更搭）
+const CAP_H: int = TILE * TILE_SCALE   # 草皮顶的屏幕高度：32px
+## 冰面平台的冷白染色（会和瓦片颜色相乘）
+const ICE_TINT: Color = Color(0.72, 0.92, 1.0)
 
 @export var size: Vector2 = Vector2(200.0, 24.0)
 ## 冰面材质：站上去摩擦力只有 15%，会带着惯性滑出去。
@@ -29,21 +41,56 @@ func setup(sz: Vector2) -> void:
 	if col != null:
 		col.shape = shape
 
+	_apply_look()
+
+
+## 只改外观，不碰碰撞。_ready() 和 setup() 都会调它：
+## _ready() 是编辑器里直接拖进场景时能看见样子，setup() 是关卡脚本改了尺寸之后重铺一次。
+func _apply_look() -> void:
+	var hw := size.x * 0.5
+	var hh := size.y * 0.5
+	# 纹理颜色和瓦片颜色相乘：普通平台用白色（原样），冰面染成冷白
+	var tint: Color = ICE_TINT if slippery else Color.WHITE
+
+	# ① 砖块体
 	var vis := get_node_or_null("Visual") as Polygon2D
 	if vis != null:
-		var hw := sz.x * 0.5
-		var hh := sz.y * 0.5
 		vis.polygon = PackedVector2Array([
 			Vector2(-hw, -hh), Vector2(hw, -hh), Vector2(hw, hh), Vector2(-hw, hh),
 		])
-		vis.color = Color(0.66, 0.90, 1.0) if slippery else Color(0.42, 0.55, 0.72)
+		vis.texture = BODY_TEX
+		vis.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		# 不设 uv 数组时，UV 直接等于顶点坐标（单位：纹理像素），
+		# 所以想让一格显示成 32px，texture_scale 要取 1/TILE_SCALE，不是 TILE_SCALE。
+		vis.texture_scale = Vector2(1.0 / TILE_SCALE, 1.0 / TILE_SCALE)
+		vis.color = tint
 
-	# 顶面那一道亮边，让"哪里能站"一眼看得出来
-	var top := get_node_or_null("Top") as Line2D
+	# ② 草皮顶：只能占一格高
+	var cap := get_node_or_null("Cap") as Polygon2D
+	if cap != null:
+		# 薄平台（22px）草皮收窄到整块高度，厚平台固定 32px
+		var cap_h: float = minf(size.y, float(CAP_H))
+		cap.polygon = PackedVector2Array([
+			Vector2(-hw, -hh), Vector2(hw, -hh),
+			Vector2(hw, -hh + cap_h), Vector2(-hw, -hh + cap_h),
+		])
+		cap.texture = CAP_TEX
+		cap.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+		# CanvasItem.texture_repeat 是两个轴一起开的，光靠它草皮会在竖直方向也重复。
+		# 这里手写 uv 把纵向锁死在 0 ~ cap_h/TILE_SCALE（整格时就是 0 ~ 16）个纹理像素。
+		var u_w: float = size.x / float(TILE_SCALE)
+		var v_h: float = cap_h / float(TILE_SCALE)
+		cap.uv = PackedVector2Array([
+			Vector2(0, 0), Vector2(u_w, 0),
+			Vector2(u_w, v_h), Vector2(0, v_h),
+		])
+		cap.color = tint
+
+	# 旧的顶面亮线（美术接入前用 Line2D 画的）：万一有人把旧场景 revert 回来也别露出来
+	var top := get_node_or_null("Top")
 	if top != null:
-		var hw2 := sz.x * 0.5
-		var hh2 := sz.y * 0.5
-		top.points = PackedVector2Array([Vector2(-hw2, -hh2), Vector2(hw2, -hh2)])
-		# 冰面用更亮的白蓝边，和普通蓝灰平台区分开
-		if slippery:
-			top.default_color = Color(0.95, 1.0, 1.0)
+		top.visible = false
+
+
+func _ready() -> void:
+	_apply_look()
