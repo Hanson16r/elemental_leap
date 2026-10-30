@@ -9,15 +9,6 @@ func _ready() -> void:
 	finish_position = Vector2(2400, 779)
 	super()
 
-
-func _subtitle() -> String:
-	return "下层地火/史莱姆，坐风场升降台到上层拿钥匙；火盆门在终点前。"
-
-
-func _intro_hint() -> String:
-	return "竖井里的升降台会上下走；上层的钥匙是可选，金币房在门后。"
-
-
 func _build() -> void:
 	_add_platform(Vector2(600, 800), 1200, 40)   # 0~1200，底 780
 	# 移动平台的 pos 是行程中点：701 ± 90 → 端点 611/791（顶 600/780）

@@ -42,6 +42,7 @@ const WIND_ZONE_SCENE: PackedScene = preload("res://scenes/elements/wind_zone.ts
 const WIND_FIELD_SCENE: PackedScene = preload("res://scenes/elements/wind_field.tscn")
 const ROCK_WALL_SCENE: PackedScene = preload("res://scenes/elements/rock_wall.tscn")
 const ROCK_PILLAR_SCENE: PackedScene = preload("res://scenes/elements/rock_pillar.tscn")
+const ROCK_BRIDGE_SCENE: PackedScene = preload("res://scenes/elements/rock_bridge.tscn")
 
 # ---- 收集品 / 敌人 / 间歇火焰（第 12 关起）----
 const COIN_SCENE: PackedScene = preload("res://scenes/collectibles/coin.tscn")
@@ -239,6 +240,19 @@ func _add_ice_platform(pos: Vector2, w: float = 200.0, h: float = 24.0) -> Anima
 	return body
 
 
+## 加一块"岩石地面"：和普通平台同高、同碰撞，只是换成岩石的深灰棕色。
+## 第 12 关断层口那处"特殊岩石地面"用它 —— 玩家一眼能看出这里和别的平台不一样。
+func _add_rock_floor(pos: Vector2, w: float = 90.0, h: float = 40.0) -> AnimatableBody2D:
+	var body := _add_platform(pos, w, h)
+	var visual := body.get_node_or_null("Visual") as Polygon2D
+	if visual != null:
+		visual.color = Color(0.42, 0.38, 0.34)
+	var top := body.get_node_or_null("Top") as Line2D
+	if top != null:
+		top.default_color = Color(0.62, 0.56, 0.48)
+	return body
+
+
 ## 加一块会消失再出现的平台（Day 9）
 func _add_blink_platform(pos: Vector2, w: float = 160.0, phase: float = 0.0) -> AnimatableBody2D:
 	var node: AnimatableBody2D = BLINK_SCENE.instantiate()
@@ -393,9 +407,14 @@ func _add_freeze_pool(
 
 
 ## 风区：走进给一段水平加速，用来跳远
-func _add_wind_zone(pos: Vector2, size: Vector2) -> Area2D:
+## boost_speed / boost_time 一般不用改（风区场景里默认 430 / 0.9 秒）。
+## 只在"风区后面紧接着就是地火"这种地方才需要调小，免得玩家被一路推着火里。
+func _add_wind_zone(pos: Vector2, size: Vector2,
+		boost_speed: float = 430.0, boost_time: float = 0.9) -> Area2D:
 	var node: Area2D = WIND_ZONE_SCENE.instantiate() as Area2D
 	node.set("size", size)
+	node.set("boost_speed", boost_speed)
+	node.set("boost_time", boost_time)
 	node.position = pos
 	game_layer.add_child(node)
 	return node
@@ -432,6 +451,73 @@ func _add_rock_pillar(pos: Vector2, width: float = 180.0, height: float = 60.0) 
 	game_layer.add_child(node)
 	_register_surface("static", Vector2(pos.x, pos.y - height + 100.0), width, 200.0,
 		"rock_pillar（需岩石）", Vector2.ZERO)
+	return node
+
+
+## 岩石机关·石柱桥：一枚岩石，一次升起一排石柱，用来跨过断层。
+## pos 是"断层左缘那一点的地面顶面"；offsets 是每根柱心相对 pos 的 x 偏移；
+## 柱顶统一比地面高 pillar_height；shaft_depth 是柱身往坑底延伸的深度（要盖住整个坑的落差）。
+## 和 _add_rock_pillar 一样，给检查工具登记"升起后可以站"的表面：
+## 检查器不模拟机关，只按最终形态算可达性，所以没升起来的断层看起来仍然能过。
+func _add_rock_bridge(pos: Vector2, offsets: Array, column_width: float = 70.0,
+		pillar_height: float = 60.0, shaft_depth: float = 330.0) -> Node2D:
+	var node: Node2D = ROCK_BRIDGE_SCENE.instantiate() as Node2D
+	node.set("column_offsets", offsets)
+	node.set("width", column_width)
+	node.set("height", pillar_height)
+	node.set("depth", shaft_depth)
+	node.position = pos
+	game_layer.add_child(node)
+	for ox in offsets:
+		_register_surface("static", Vector2(pos.x + float(ox), pos.y - pillar_height + 20.0),
+			column_width, 40.0, "rock_bridge（需岩石）", Vector2.ZERO)
+	return node
+
+
+## 冻住的小水洼：纯装饰，不挡路、不结冰、不淹人。
+## 用在"冰封水源 / 冰墙"这种地方，给被冻住的源头一个能看见的实体。
+## pos 是地面顶面，w 是水洼宽度。
+func _add_frozen_pool(pos: Vector2, w: float = 60.0) -> Node2D:
+	var node := Node2D.new()
+	node.position = pos
+	game_layer.add_child(node)
+	var hw := w * 0.5
+
+	# 冰下的水：贴着地面露出来的一条缝
+	var water := Polygon2D.new()
+	water.polygon = PackedVector2Array([
+		Vector2(-hw, 3.0), Vector2(hw, 3.0), Vector2(hw - 2.0, 9.0), Vector2(-hw + 2.0, 9.0),
+	])
+	water.color = Color(0.28, 0.50, 0.72, 0.85)
+	node.add_child(water)
+
+	# 冰面：盖在水上，中间略鼓
+	var ice := Polygon2D.new()
+	ice.polygon = PackedVector2Array([
+		Vector2(-hw - 1.0, -4.0), Vector2(hw + 1.0, -4.0),
+		Vector2(hw, 3.5), Vector2(-hw, 3.5),
+	])
+	ice.color = Color(0.82, 0.93, 1.0, 0.96)
+	node.add_child(ice)
+
+	# 高光 + 两道裂纹：不通风化，一看就是冻住的
+	var shine := Polygon2D.new()
+	shine.polygon = PackedVector2Array([
+		Vector2(-hw + 5.0, -4.0), Vector2(-hw + 18.0, -4.0),
+		Vector2(-hw + 15.0, 1.0), Vector2(-hw + 3.0, 1.0),
+	])
+	shine.color = Color(1.0, 1.0, 1.0, 0.45)
+	node.add_child(shine)
+
+	for cx in [-hw * 0.35, hw * 0.25]:
+		var crack := Polygon2D.new()
+		crack.polygon = PackedVector2Array([
+			Vector2(cx, -4.0), Vector2(cx + 2.0, -4.0),
+			Vector2(cx + 5.0, 3.0), Vector2(cx + 3.0, 3.0),
+		])
+		crack.color = Color(0.62, 0.80, 0.95, 0.75)
+		node.add_child(crack)
+
 	return node
 
 

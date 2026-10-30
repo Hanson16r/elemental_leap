@@ -12,7 +12,7 @@ extends CanvasLayer
 
 func show_card(level_number: int, title: String, subtitle: String) -> void:
 	$Root/LevelLabel.text = "第 %d 关" % level_number
-	$Root/SubLabel.text = "%s\n%s" % [title, subtitle]
+	$Root/SubLabel.text = title if subtitle == "" else "%s\n%s" % [title, subtitle]
 	_root.modulate.a = 0.0
 	var tw := create_tween()
 	tw.tween_property(_root, "modulate:a", 1.0, 0.4)

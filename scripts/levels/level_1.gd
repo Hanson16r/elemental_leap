@@ -17,19 +17,9 @@ func _ready() -> void:
 	finish_position = Vector2(2800, 779)
 	super()
 
-
-func _subtitle() -> String:
-	return "跳坑、躲史莱姆、等移动平台、拿钥匙开门；一关把基础操作教完。"
-
-
-func _intro_hint() -> String:
-	return "A/D 移动，空格跳；金币 5 枚；中间有检查点，掉坑后从检查点复活。"
-
-
 func _build() -> void:
 	# ---- A 出生安全区 ----
 	_add_platform(Vector2(150, 800), 500, 40)     # -100~400
-	_add_sign(Vector2(260, 700), "A/D 移动，空格跳跃；掉进坑里按 R 重开")
 
 	# ---- B 两个 120 的坑（金币放在坑上方，跳过去顺手吃）----
 	_add_platform(Vector2(710, 800), 380, 40)     # 520~900
@@ -40,7 +30,6 @@ func _build() -> void:
 
 	# ---- D 检查点 + 移动平台大坑 ----
 	_add_checkpoint(Vector2(1560, 780))
-	_add_sign(Vector2(1600, 700), "等移动平台过来再上")
 	_add_moving_platform(Vector2(1900, 780), Vector2(240, 0), 70.0, 130)
 
 	# ---- E 钥匙门 + 终点 ----

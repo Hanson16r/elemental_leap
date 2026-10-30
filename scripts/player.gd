@@ -3,7 +3,7 @@ extends CharacterBody2D
 ##
 ## Day 2 的四件事，在 scenes/player.tscn 里：
 ##   CharacterBody2D（会碰撞会移动的身体）
-##     ├─ AnimatedSprite2D  （璃月行走图：idle / run 两套动画）
+##     ├─ AnimatedSprite2D  （行走图：idle / run 两套动画；具体用哪张由「选择角色」决定）
 ##     ├─ CollisionShape2D  （胶囊形碰撞盒，比矩形过拐角更顺）
 ##     └─ Camera2D          （已勾选平滑跟随）
 ##
@@ -86,9 +86,21 @@ func _ready() -> void:
 	_spawn = global_position
 	_camera.limit_smoothed = true
 	_visual.scale = VISUAL_SCALE
+	_apply_character()                 # 换成玩家在主菜单选的角色（没选过就用默认）
 	if _visual.sprite_frames != null and _visual.sprite_frames.has_animation("idle"):
 		_visual.play("idle")
 	print("[Player] 就绪。A/D 移动，空格跳，R 重开，Esc 暂停。")
+
+
+## 把 AnimatedSprite2D 的行走图换成「选择角色」里选中的那张。
+## 切片逻辑在 scripts/autoload/character_db.gd（Characters 单例），玩家这边只管换。
+## 换不到（图丢了 / id 不认识）就保持 player.tscn 里手摆的那一份，游戏照常能玩。
+func _apply_character() -> void:
+	var frames := Characters.build_frames(Characters.selected_id())
+	if frames == null:
+		push_warning("[Player] 角色行走图加载失败，沿用 player.tscn 里的默认图")
+		return
+	_visual.sprite_frames = frames
 
 
 ## 关卡脚本在玩家碰到检查点后调用它，改掉"复活点"
@@ -399,7 +411,7 @@ func freeze() -> void:
 
 
 # ===================================================================== Day 2 的外观
-## 角色本体已经交给 AnimatedSprite2D（1璃月行走图男.png），
+## 角色本体已经交给 AnimatedSprite2D（行走图来自 scripts/character/，见 _apply_character），
 ## 这里只画"头顶的元素球"，所以 _draw() 不会盖住行走图。
 func _draw() -> void:
 	# 角色本体已经用 AnimatedSprite2D 显示了；

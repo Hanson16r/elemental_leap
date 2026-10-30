@@ -9,15 +9,6 @@ func _ready() -> void:
 	finish_position = Vector2(2450, 719)
 	super()
 
-
-func _subtitle() -> String:
-	return "冰滑道 → 风场到二层 → 火融冰墙 → 钥匙/锁门 → 三层终点。"
-
-
-func _intro_hint() -> String:
-	return "滑道尽头要跳；风场把你托上二层；钥匙在支路，锁门后是金币房。"
-
-
 func _build() -> void:
 	# 起点平台必须盖住出生点 (100, 1500)。
 	# 原来写的是 550 宽 700，只铺到 200~900，出生点 x=100 悬在平台外面，

@@ -9,15 +9,6 @@ func _ready() -> void:
 	finish_position = Vector2(2800, 779)
 	super()
 
-
-func _subtitle() -> String:
-	return "坐移动平台、借风跳过 130 的坑；火融冰墙拿钥匙。"
-
-
-func _intro_hint() -> String:
-	return "两个 300 的坑用移动平台；中间 130 的坑借风区加速跳。"
-
-
 func _build() -> void:
 	_add_platform(Vector2(200, 800), 600, 40)     # -100~500
 	_add_platform(Vector2(1000, 800), 400, 40)    # 800~1200
@@ -27,7 +18,6 @@ func _build() -> void:
 	_add_moving_platform(Vector2(650, 780), Vector2(240, 0), 80.0, 160)
 	_add_moving_platform(Vector2(2150, 780), Vector2(240, 0), 80.0, 160)
 	_add_wind_zone(Vector2(1160, 740), Vector2(80, 160))
-	_add_sign(Vector2(1080, 660), "借风跳过 130 的坑")
 
 	_add_element_orb(Vector2(1400, 750), Element.Kind.FIRE)
 	_add_ice_barrier(Vector2(1600, 700), Vector2(40, 160))

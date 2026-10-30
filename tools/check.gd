@@ -9,11 +9,11 @@ extends Node
 ##   1. 加载所有 .gd 脚本（语法错误会在这里暴露）
 ##   2. 加载并实例化所有 .tscn 场景（节点/资源引用错误会在这里暴露）
 ##   3. 核对输入映射（left/right/jump/restart）
-##   4. 核对主场景和单例配置
+##   4. 核对主场景、单例配置，以及「选择角色」用到的行走图
 ## 有任何一项失败就以退出码 1 结束，方便脚本判断。
 
 const REQUIRED_ACTIONS := ["left", "right", "jump", "restart"]
-const REQUIRED_AUTOLOADS := ["Events", "GameState", "Sfx"]
+const REQUIRED_AUTOLOADS := ["Events", "GameState", "Sfx", "Characters"]
 const LEVEL_SCENES := [
 	"res://scenes/levels/level_1.tscn",
 	"res://scenes/levels/level_2.tscn",
@@ -129,6 +129,15 @@ func _check_globals() -> void:
 			_ok("关卡存在 " + path)
 		else:
 			_fail("关卡文件不存在：" + path)
+
+	# 角色图鉴：照着「选择角色」界面真正会走的那条路切一次图，
+	# 图丢了 / 尺寸不够 / 表格填错都会在这里暴露。
+	for entry in Characters.ROSTER:
+		var id := str(entry["id"])
+		if Characters.build_frames(id) == null:
+			_fail("角色 %s 的行走图切不出来：%s" % [id, str(entry["sheet"])])
+		else:
+			_ok("角色 " + id)
 
 
 # ------------------------------------------------------------------ 工具

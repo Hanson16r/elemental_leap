@@ -1,0 +1,138 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/play_menu.gd" id="1_play"]
+[ext_resource type="Script" path="res://scripts/falling_snow.gd" id="2_snow"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_showcase"]
+bg_color = Color(0.09, 0.13, 0.21, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.32, 0.45, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 8
+
+[node name="PlayMenu" type="CanvasLayer"]
+layer = 40
+script = ExtResource("1_play")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.055, 0.078, 0.133, 1)
+
+[node name="Snow" type="Node2D" parent="."]
+script = ExtResource("2_snow")
+
+[node name="Root" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Box" type="VBoxContainer" parent="Root"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 44.0
+offset_right = 300.0
+offset_bottom = 44.0
+grow_horizontal = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/Box"]
+theme_override_font_sizes/font_size = 44
+theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
+text = "开始游戏"
+horizontal_alignment = 1
+
+[node name="CharStrip" type="Control" parent="Root/Box"]
+custom_minimum_size = Vector2(0, 104)
+mouse_filter = 2
+
+[node name="Frame" type="Panel" parent="Root/Box/CharStrip"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_showcase")
+
+[node name="Preview" type="AnimatedSprite2D" parent="Root/Box/CharStrip"]
+position = Vector2(58, 52)
+scale = Vector2(1.85, 1.85)
+
+[node name="PreviewName" type="Label" parent="Root/Box/CharStrip"]
+offset_left = 118.0
+offset_top = 20.0
+offset_right = 380.0
+offset_bottom = 52.0
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
+text = "蒙德少女"
+
+[node name="PreviewDesc" type="Label" parent="Root/Box/CharStrip"]
+offset_left = 120.0
+offset_top = 50.0
+offset_right = 380.0
+offset_bottom = 74.0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.55, 0.68, 0.82, 1)
+text = "金发，默认角色"
+
+[node name="CharacterButton" type="Button" parent="Root/Box/CharStrip"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -168.0
+offset_top = 28.0
+offset_right = -16.0
+offset_bottom = 76.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 18
+text = "选择角色"
+
+[node name="ContinueButton" type="Button" parent="Root/Box"]
+custom_minimum_size = Vector2(0, 46)
+theme_override_font_sizes/font_size = 22
+text = "继续"
+
+[node name="StartButton" type="Button" parent="Root/Box"]
+custom_minimum_size = Vector2(0, 46)
+theme_override_font_sizes/font_size = 22
+text = "从第 1 关重新开始"
+
+[node name="ResetButton" type="Button" parent="Root/Box"]
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "清空进度"
+
+[node name="BackButton" type="Button" parent="Root/Box"]
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 18
+text = "返回"
+
+[node name="Tip" type="Label" parent="Root"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -56.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.5, 0.62, 0.75, 1)
+text = "A / D 移动　空格跳跃　R 重开　Esc 暂停"
+horizontal_alignment = 1

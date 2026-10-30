@@ -26,14 +26,12 @@ extends "res://scripts/level_base.gd"
 # 终段的门改成钥匙门（钥匙放在下层两只史莱姆中间）。
 # 下层两只史莱姆都用第二组（浅蓝）水史莱姆（2026-10-29 晚按用户要求统一外观）。
 
-
 func _init() -> void:
 	level_number = 3
 	level_title = "分岔"
 	world_size = Vector2(2400, 1100)
 	start_position = Vector2(100, 480)
 	finish_position = Vector2(2250, 779)
-
 
 func _build() -> void:
 	# ---------------- 上层：起点 → 冻结水池 → 上层平台 → 冰桥 ----------------
@@ -60,7 +58,6 @@ func _build() -> void:
 	_add_platform(Vector2(2100, 800), 400, 40)   # 汇合 B 1900~2300
 
 	# ---------------- 元素 / 机关 ----------------
-	_add_sign(Vector2(330, 440), "水池：拿冰冻住再走 / 掉进水里会落到下层")
 	_add_element_orb(Vector2(-80, 490), Element.Kind.ICE)
 
 	# 钥匙放下层两只史莱姆中间（570~730 与 1020~1200 的正中）
@@ -85,11 +82,3 @@ func _build() -> void:
 
 	_add_finish_flag(finish_position)
 	_add_death_zone(1050, -200, 2500)
-
-
-func _subtitle() -> String:
-	return "拿冰冻住水池过桥；掉进水池会落到下层（史莱姆与冰霜地带）。"
-
-
-func _intro_hint() -> String:
-	return "先捡冰（起点左端）：冻住水池过桥。掉进水池会落到下层，也能到汇合点。"

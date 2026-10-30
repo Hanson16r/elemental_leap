@@ -25,6 +25,11 @@ var best_times: Dictionary = {}
 var best_coins: Dictionary = {}
 ## 每关金币总数（用来判断"全收集"星级）。{ "10": 5, "11": 5 }
 var coin_totals: Dictionary = {}
+## 玩家在「选择角色」里选中的人物 id（角色表在 scripts/autoload/character_db.gd 的 ROSTER）。
+## 空字符串 = 还没选过，那边会自动回落到默认角色。
+## 它也是一个普通的存档项：跟着关卡进度存在同一个 progress.cfg 里，
+## 但**不受 SAVE_VERSION 影响** —— 旧存档没有这一项时，读出来是空串，正好走默认值。
+var character_id: String = ""
 
 # ---------------- 一局内的收集品 ----------------
 ## 这一关当前吃到的金币数
@@ -60,6 +65,7 @@ func load_progress() -> void:
 	best_times = cfg.get_value("progress", "best_times", {})
 	best_coins = cfg.get_value("progress", "best_coins", {})
 	coin_totals = cfg.get_value("progress", "coin_totals", {})
+	character_id = str(cfg.get_value("progress", "character", ""))
 	var version := int(cfg.get_value("meta", "version", 1))
 	# 旧存档逐步迁移到当前编号：每一步只搬关号，不动成绩本身。
 	#  v1→v2：删掉第 4 关「冰之谷」，后面的关号前移一位。
@@ -84,6 +90,7 @@ func save_progress() -> void:
 	cfg.set_value("progress", "best_times", best_times)
 	cfg.set_value("progress", "best_coins", best_coins)
 	cfg.set_value("progress", "coin_totals", coin_totals)
+	cfg.set_value("progress", "character", character_id)
 	var err := cfg.save(SAVE_PATH)
 	if err != OK:
 		push_warning("[GameState] 存档写入失败，错误码 " + str(err))
@@ -91,6 +98,8 @@ func save_progress() -> void:
 		print("[GameState] 已存档：已解锁到第 ", unlocked_level, " 关")
 
 
+## 清空进度：关卡解锁、成绩、金币全部归零。
+## 选中的角色**故意保留** —— 那是外观偏好，不是进度，清进度不该把人物也换掉。
 func reset_progress() -> void:
 	unlocked_level = 1
 	best_times = {}

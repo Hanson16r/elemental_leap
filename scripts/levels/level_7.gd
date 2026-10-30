@@ -9,15 +9,6 @@ func _ready() -> void:
 	finish_position = Vector2(2800, 779)
 	super()
 
-
-func _subtitle() -> String:
-	return "捡火种融冰墙，拿钥匙开门；小心史莱姆。"
-
-
-func _intro_hint() -> String:
-	return "火种能融冰墙；冰墙在钥匙前面。"
-
-
 func _build() -> void:
 	_add_platform(Vector2(300, 800), 800, 40)     # -100~700
 	_add_platform(Vector2(1100, 800), 600, 40)    # 800~1400

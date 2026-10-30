@@ -9,15 +9,6 @@ func _ready() -> void:
 	finish_position = Vector2(3000, 779)
 	super()
 
-
-func _subtitle() -> String:
-	return "冰、岩、火、风各来一次；四种元素轮着用。"
-
-
-func _intro_hint() -> String:
-	return "冰冻桥 → 岩石砸墙 → 火融冰墙 → 借风跳坑 → 钥匙门。"
-
-
 func _build() -> void:
 	_add_platform(Vector2(250, 800), 700, 40)     # -100~400? 250±350 = -100~600
 	_add_platform(Vector2(750, 800), 500, 40)     # 500~1000

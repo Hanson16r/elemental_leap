@@ -18,3 +18,8 @@ Thumbs.db
 # 编辑器备份
 *.tmp
 *~
+
+# 一次性的临时场景/脚本（截图、探针之类，用完就删，别进仓库）
+tmp_*.gd
+tmp_*.gd.uid
+tmp_*.tscn

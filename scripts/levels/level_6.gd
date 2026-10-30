@@ -9,15 +9,6 @@ func _ready() -> void:
 	finish_position = Vector2(2800, 779)
 	super()
 
-
-func _subtitle() -> String:
-	return "岩石砸墙、顶起石柱；拿钥匙开门。"
-
-
-func _intro_hint() -> String:
-	return "岩石能砸石墙，也能把石柱从地里顶起来当台阶。"
-
-
 func _build() -> void:
 	_add_platform(Vector2(250, 800), 700, 40)     # -100~600
 	_add_platform(Vector2(1000, 800), 600, 40)    # 700~1300

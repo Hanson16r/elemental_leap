@@ -1,0 +1,97 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/character_select.gd" id="1_select"]
+[ext_resource type="Script" path="res://scripts/falling_snow.gd" id="2_snow"]
+
+[node name="CharacterSelect" type="CanvasLayer"]
+layer = 40
+script = ExtResource("1_select")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.055, 0.078, 0.133, 1)
+
+[node name="Snow" type="Node2D" parent="."]
+script = ExtResource("2_snow")
+
+[node name="Root" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Root"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 32.0
+offset_right = 400.0
+offset_bottom = 100.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.78, 0.92, 1, 1)
+text = "选择角色"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Root"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 104.0
+offset_right = 400.0
+offset_bottom = 132.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.63, 0.75, 0.88, 1)
+text = "当前选择：蒙德少女"
+horizontal_alignment = 1
+
+[node name="Grid" type="GridContainer" parent="Root"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -390.0
+offset_top = -120.0
+offset_right = 390.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 4
+
+[node name="Buttons" type="HBoxContainer" parent="Root"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -230.0
+offset_top = -104.0
+offset_right = 230.0
+offset_bottom = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="Root/Buttons"]
+custom_minimum_size = Vector2(220, 52)
+theme_override_font_sizes/font_size = 22
+text = "就选这个角色"
+
+[node name="BackButton" type="Button" parent="Root/Buttons"]
+custom_minimum_size = Vector2(200, 52)
+theme_override_font_sizes/font_size = 20
+text = "返回"
