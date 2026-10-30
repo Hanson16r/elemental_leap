@@ -340,28 +340,6 @@ func _add_checkpoint(pos: Vector2, reach: float = 0.0) -> Area2D:
 	return node
 
 
-## 踩下去开门的按钮（Day 9）
-func _add_button(pos: Vector2, door_id: String) -> Area2D:
-	var node: Area2D = BUTTON_SCENE.instantiate()
-	game_layer.add_child(node)
-	node.global_position = pos
-	node.setup(door_id)
-	return node
-
-
-## 被按钮打开的门（Day 9）
-func _add_door(pos: Vector2, door_id: String, size: Vector2 = Vector2(40, 200)) -> StaticBody2D:
-	var node: StaticBody2D = DOOR_SCENE.instantiate() as StaticBody2D
-	# 先摆位置再进树：门的碰撞体在 _ready() 里创建，进树后再移动可能让碰撞体留在原点
-	node.position = pos
-	game_layer.add_child(node)
-	node.setup(door_id, size)
-	# 门是竖着的墙，不是"能站人的平面"，所以**不要**登记进 surfaces。
-	# 以前登记了，可达性检查会把它当成一块顶面 635 的平台，
-	# 然后刷出一堆"门跳不上去"的假报警。
-	return node
-
-
 ## 元素球（地上捡的火/冰/风）。注意：先 set(kind) + 摆好位置，再 add_child，
 ## 因为元素的 _ready() 会按 kind 来建颜色和文字；物理体也要在进树前就位。
 func _add_element_orb(pos: Vector2, kind: int) -> Area2D:
@@ -572,16 +550,6 @@ func _add_walker(pos: Vector2, patrol: float = 120.0, speed: float = 60.0) -> Ar
 	return node
 
 
-## 普通史莱姆：淡绿这一套贴图，和蓝色水史莱姆区分开（行为与 _add_walker 完全一样）
-func _add_plain_slime(pos: Vector2, patrol: float = 60.0, speed: float = 60.0) -> Area2D:
-	var node: Area2D = PLAIN_SLIME_SCENE.instantiate() as Area2D
-	node.set("patrol", patrol)
-	node.set("speed", speed)
-	node.position = pos
-	game_layer.add_child(node)
-	return node
-
-
 ## 水史莱姆：和普通史莱姆一样巡逻，但会在"有效中的冰霜地带"里被冻住 2.5 秒
 func _add_water_slime(pos: Vector2, patrol: float = 90.0, speed: float = 60.0) -> Area2D:
 	var node: Area2D = WATER_SLIME_SCENE.instantiate() as Area2D
@@ -621,15 +589,6 @@ func _add_flame_jet(pos: Vector2, up: bool = true, phase: float = 0.0, length: f
 	node.set("length", length)
 	node.set("triggered", triggered)
 	node.set("off_time", off_time)
-	node.position = pos
-	game_layer.add_child(node)
-	return node
-
-
-## 压力板：踩上去发 pressed，松开发 released（第 2 关用来点天花板火焰）
-func _add_pressure_plate(pos: Vector2, width: float = 72.0) -> Area2D:
-	var node: Area2D = PRESSURE_PLATE_SCENE.instantiate() as Area2D
-	node.set("width", width)
 	node.position = pos
 	game_layer.add_child(node)
 	return node
@@ -706,17 +665,6 @@ func _add_finish_flag(pos: Vector2) -> Area2D:
 	node.setup(pos)
 	node.reached.connect(_on_finish_reached)
 	return node
-
-
-## 关卡里的文字牌，用来提示玩法
-func _add_sign(pos: Vector2, text: String) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.add_theme_font_size_override("font_size", 19)
-	label.add_theme_color_override("font_color", Color(0.72, 0.86, 1.0, 0.8))
-	game_layer.add_child(label)
-	label.global_position = pos
-	return label
 
 
 # ===================================================================== 死亡与重生
