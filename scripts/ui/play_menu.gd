@@ -20,7 +20,7 @@ extends CanvasLayer
 @onready var _preview_desc: Label = $Root/Box/CharStrip/PreviewDesc
 @onready var _character_btn: Button = $Root/Box/CharStrip/CharacterButton
 
-## 底部"关卡选择"的 11 个按钮（运行时创建，不用改 .tscn）
+## 底部"关卡选择"按钮（按 GameState.TOTAL_LEVELS 运行时创建，不用改 .tscn）
 var _level_buttons: Array[Button] = []
 
 
