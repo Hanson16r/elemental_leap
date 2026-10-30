@@ -21,14 +21,9 @@ const LEVEL_SCENES := [
 	"res://scenes/levels/level_1.tscn",
 	"res://scenes/levels/level_2.tscn",
 	"res://scenes/levels/level_3.tscn",
-	# 第 4 关「天空之城」、第 10 关「冰宫」用竖向风场垂直起飞，不是跳跃；
-	# 这个工具只算抛物线跳跃，所以这两关单独用真人试玩验收。
+	# 第 4 关「天空之城」用竖向风场垂直起飞，不是跳跃；
+	# 这个工具只算抛物线跳跃，所以它单独用真人试玩验收。
 	"res://scenes/levels/level_5.tscn",
-	"res://scenes/levels/level_6.tscn",
-	"res://scenes/levels/level_7.tscn",
-	"res://scenes/levels/level_8.tscn",
-	"res://scenes/levels/level_9.tscn",
-	"res://scenes/levels/level_11.tscn",
 ]
 
 ## 安全系数：真实极限不该拿来设计关卡，要留操作和反应的余量。

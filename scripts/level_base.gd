@@ -235,7 +235,7 @@ func _add_ice_platform(pos: Vector2, w: float = 200.0, h: float = 24.0) -> Anima
 	var body: AnimatableBody2D = PLATFORM_SCENE.instantiate()
 	game_layer.add_child(body)
 	body.global_position = pos
-	# 先打上冰面标记，再 setup()：setup() 会按 slippery 换成冰色和亮白边
+	# 先打上冰面标记，再 setup()：setup() 会按 slippery 换成冰瓦片顶 + 冷蓝砖体
 	body.set("slippery", true)
 	body.setup(Vector2(w, h))
 	_register_surface("static", pos, w, h, "ice_bridge（冰面）", Vector2.ZERO)

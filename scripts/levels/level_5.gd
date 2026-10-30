@@ -1,39 +1,132 @@
 extends "res://scripts/level_base.gd"
-## 关卡 4 ——「风之丘」（移动平台 + 风区跳远 + 火融冰墙 + 钥匙门）
+## 关卡 5 ——「终章：元素城堡」（冰 / 岩 / 火 / 风 + 地火 + 史莱姆 + 喷火史莱姆 + 钥匙门）
+## 2026-10-30：原第 11 关，删掉原 5~10 关后接在第 4 关后面，成为最后一关（内容未改）。
+##
+## 2026-10-30 改动：把第二个 100 宽的断层（原 1200~1300）改成"岩石机关"的展示场景。
+##   ① 断层拓到 1290~1590（300 宽）：不升石柱谁也跳不过去；
+##   ② 断层口留一块"特殊岩石地面"（1200~1290，岩石色），玩家带着 900 处那枚岩石走过来，
+##      站到地面标记上就触发；
+##   ③ 三根石柱从坑底依次升起（柱顶 720，比地面高 60）；
+##   ④ 踩着三根石柱跳到对岸，第三块平台从 1300 起改成 1590 起。
+## 岩石链：900 的岩石种子 → 一路带到断层口 → 升石柱架桥。
+##   原来 1100 的石墙和 1210 的第二枚岩石种子都已删掉（一枚岩石只服务石柱，不用来回捡）。
+## 代价是第三块平台短了 260 像素，第二幕（元素熔炉）的整串坐标随之右移 290。
+##
+## 元素顺序：冰种 → 冻结水池 → 岩石种子 → 岩石地面 → 石柱
+##   → 史莱姆（走位）→ 火种 → 检查点 → 冰封水源 + 冰墙 → 蒸汽风场 + 钥匙 → 水平风场 →
+##   地火 → 钥匙门 → 终点。
 
 func _ready() -> void:
 	level_number = 5
-	level_title = "风之丘"
-	world_size = Vector2(3000, 1100)
+	level_title = "终章：元素城堡"
+	world_size = Vector2(3400, 1200)
 	start_position = Vector2(100, 700)
-	finish_position = Vector2(2800, 779)
+	finish_position = Vector2(3200, 779)
 	super()
 
+
 func _build() -> void:
+	# ---------------- 地面 ----------------
 	_add_platform(Vector2(200, 800), 600, 40)     # -100~500
-	_add_platform(Vector2(1000, 800), 400, 40)    # 800~1200
-	_add_platform(Vector2(1665, 800), 670, 40)    # 1330~2000
-	_add_platform(Vector2(2550, 800), 500, 40)    # 2300~2800
+	_add_platform(Vector2(900, 800), 600, 40)     # 600~1200
+	# 断层口"特殊岩石地面"：和地面同高，往断层里探出 90 像素
+	_add_rock_floor(Vector2(1245, 800), 90, 40)   # 1200~1290
+	_add_platform(Vector2(1795, 800), 410, 40)    # 1590~2000（原 1300~2000，让位给断层）
+	_add_platform(Vector2(2450, 800), 700, 40)    # 2100~2800
+	_add_platform(Vector2(3150, 800), 500, 40)    # 2900~3400
 
-	_add_moving_platform(Vector2(650, 780), Vector2(240, 0), 80.0, 160)
-	_add_moving_platform(Vector2(2150, 780), Vector2(240, 0), 80.0, 160)
-	_add_wind_zone(Vector2(1160, 740), Vector2(80, 160))
+	# ---------------- 第一段：冰 ----------------
+	_add_element_orb(Vector2(250, 750), Element.Kind.ICE)
+	_add_freeze_pool(Vector2(600, 780), 300)      # 450~750
+	_register_surface("static", Vector2(600, 790), 300, 20, "ice_slide（需冰冻）", Vector2.ZERO)
 
-	_add_element_orb(Vector2(1400, 750), Element.Kind.FIRE)
-	_add_ice_barrier(Vector2(1600, 700), Vector2(40, 160))
-	_add_key(Vector2(2100, 750))
-	_add_key_door(Vector2(2500, 680), Vector2(40, 200))
+	# ---------------- 第二段：岩石 ----------------
+	_add_element_orb(Vector2(900, 750), Element.Kind.ROCK)
+	_add_flame_jet(Vector2(1000, 780), true, 0.0)
+	# 断层前的检查点：掉进断层复活在这里，不用重做冰桥
+	_add_checkpoint(Vector2(1150, 780))
 
-	_add_coin(Vector2(300, 750))
-	_add_coin(Vector2(700, 750))
-	_add_coin(Vector2(1100, 750))
-	_add_coin(Vector2(1800, 750))
-	_add_coin(Vector2(2400, 750))
+	# ---------------- 第三段：断层 / 岩石机关（本次改动的主角） ----------------
+	# 三根石柱：柱心 1335 / 1435 / 1535，柱顶 720，柱身一直立到坑底（深度 320）；
+	# 手里没岩石的话站上去不触发
+	_add_rock_bridge(Vector2(1290, 780), [45.0, 145.0, 245.0], 70.0, 60.0, 320.0)
 
-	_add_checkpoint(Vector2(900, 780))
-	# 第二平台（800~1200）不放怪，检查点复活更安全
-	_add_walker(Vector2(1500, 760), 100, 60)
-	_add_walker(Vector2(2400, 760), 80, 55)
+	# 断层本身画成暗色：一眼能看出"这里掉下去会死"
+	var pit := Polygon2D.new()
+	pit.polygon = PackedVector2Array([
+		Vector2(1290, 780), Vector2(1590, 780),
+		Vector2(1590, 1100), Vector2(1290, 1100),
+	])
+	pit.color = Color(0.07, 0.07, 0.10, 0.95)
+	pit.z_index = -2
+	game_layer.add_child(pit)
+
+	# 坑底的黑岩：画在石柱前面（z 5），把没升起来的柱身挡住，
+	# 柱子升起来的时候就像从岩层里长出来，而不是从悬空的坑里冒出来
+	var rockbed := Polygon2D.new()
+	rockbed.polygon = PackedVector2Array([
+		Vector2(1284, 1100), Vector2(1596, 1100),
+		Vector2(1596, 1560), Vector2(1284, 1560),
+	])
+	rockbed.color = Color(0.11, 0.11, 0.14, 1.0)
+	rockbed.z_index = 5
+	game_layer.add_child(rockbed)
+
+	# 坑底的尖刺：只做视觉提示，真正杀人的是下面的掉落死亡区
+	# z -1：画在坑的暗底上面、石柱后面（柱子是 z 0），不然三角会盖住柱脚，像柱子插在刺后面
+	var spikes := Node2D.new()
+	spikes.z_index = -1
+	game_layer.add_child(spikes)
+	var sx := 1300.0
+	while sx < 1580.0:
+		var tri := Polygon2D.new()
+		tri.polygon = PackedVector2Array([
+			Vector2(sx, 1100), Vector2(sx + 10.0, 1080), Vector2(sx + 20.0, 1100),
+		])
+		tri.color = Color(0.62, 0.62, 0.68, 0.9)
+		spikes.add_child(tri)
+		sx += 26.0
+
+	# 对岸不再直接放检查点：检查点挪到火种后面（1790），掉下去要重做一遍石柱桥
+
+	# ---------------- 第四段：第二幕·元素熔炉（火 + 冰 + 风） ----------------
+	# 参考表里 1300 / 1400 / 1500 / 1580~1630 / 1640~1780 / 1710,400 / 1830~1930
+	# 这一串坐标整体右移 290（断层右缘从 1300 变成 1590），顺序不变：
+	# 走位挑战 → 火种 → 检查点 → 冰封水源 + 冰墙 → 蒸汽上升通道（顺手拿钥匙）→ 水平风场控制落点
+	_add_walker(Vector2(1620, 760), 20, 55)                       # 1300 + 290：走位挑战
+	_add_element_orb(Vector2(1690, 750), Element.Kind.FIRE)       # 1400 + 290：火能力
+	_add_checkpoint(Vector2(1790, 780))                           # 1500 + 290
+
+	# 冰封水源：冰墙前一小池冻住的水（纯装饰，踩上去不掉）
+	_add_frozen_pool(Vector2(1830, 780), 60)                      # 1800~1860
+	_add_ice_barrier(Vector2(1895, 700), Vector2(50, 160))        # 1580~1630 + 290：用火融开
+
+	# 蒸汽风场：1640~1780 + 290 → 1930~2070，架在 2000~2100 的断口上。
+	# 融掉冰墙 → 走进上升气流 → 被托起来横过坑，半空顺手拿 2000,400 的钥匙
+	_add_wind_field(Vector2(2000, 570), Vector2(140, 420))        # x 1930~2070，y 360~780
+	_add_key(Vector2(2000, 400))                                  # 1710,400 + 290：空中收集
+
+	# 水平风场：1830~1930 + 290 → 2120~2220，落在 2100 平台上，用来控制落点。
+	# 吹得比默认（430 / 0.9 秒）轻一些：后面 200 步就是 2400 的地火，
+	# 默认强度会把人一路推进火里，玩家来不及停。
+	_add_wind_zone(Vector2(2170, 740), Vector2(100, 160), 360.0, 0.5)   # x 2120~2220
+
+	# ---------------- 第五段：最后两块平台 ----------------
+	_add_flame_jet(Vector2(2400, 780), true, 0.5)     # 原 2200：让位给 2120~2220 的水平风场
+
+	_add_key_door(Vector2(2900, 680), Vector2(40, 200))
+	# 最后一块平台是 2900~3400，左边缘 2900。
+	# 喷火史莱姆在 3050（离左边缘 150），从 2800~2900 的缝隙跳过来时落地区更宽。
+	_add_fire_shooter(Vector2(3050, 760), -1.0)
+
+	_add_coin(Vector2(500, 750))
+	_add_coin(Vector2(1000, 750))
+	_add_coin(Vector2(1445, 645))    # 断层上空：踩着石柱跳的时候顺手吃
+	_add_coin(Vector2(2000, 520))    # 蒸汽通道里：被托上去拿钥匙的路上
+	_add_coin(Vector2(3100, 750))
+
+	# 倒数第二块平台（2100~2800）上不摆巡逻怪：
+	# 那块平台是通往最后一块平台和钥匙门的起跳点，落点被怪占着很容易被撞下去。
 	_add_finish_flag(finish_position)
 
-	_add_death_zone(1150, -200, 3100)
+	_add_death_zone(1200, -200, 3500)

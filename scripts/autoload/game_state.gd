@@ -11,11 +11,11 @@ const SAVE_PATH := "user://progress.cfg"
 ##   例：想先玩「天空之城」(4)、再玩「分岔」(3) → [1, 2, 4, 3, 5, ...]
 ## 文件名、脚本里的 level_number、存档都不用动：存档按关卡编号（身份）记，
 ## 编号不会因为换顺序而变；界面上显示的「第几关」按位置算。
-const LEVEL_ORDER := [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+const LEVEL_ORDER := [1, 2, 3, 4, 5]
 ## 关卡总数。加/删关卡时和 LEVEL_ORDER 一起改（= LEVEL_ORDER.size()）。
-const TOTAL_LEVELS := 11
-## 存档格式版本。4 = 删掉「火之花」并重排 3/4 关之后的编号。
-const SAVE_VERSION := 4
+const TOTAL_LEVELS := 5
+## 存档格式版本。5 = 删掉原 5~10 关，原第 11 关「终章」接成第 5 关。
+const SAVE_VERSION := 5
 
 ## 已解锁到第几关（1 起算）
 var unlocked_level: int = 1
@@ -77,6 +77,8 @@ func load_progress() -> void:
 		_migrate_v2_to_v3()
 	if version < 4:
 		_migrate_v3_to_v4()
+	if version < 5:
+		_migrate_v4_to_v5()
 	if version < SAVE_VERSION:
 		save_progress()
 	unlocked_level = clampi(unlocked_level, 1, TOTAL_LEVELS)
@@ -173,6 +175,20 @@ func _migrate_v3_to_v4() -> void:
 	coin_totals = _map_level_keys(coin_totals, RECORD_MAP)
 	# 解锁进度按“已通关数量”顺移：删掉第 3 关后，进度超过它的整体 -1。
 	unlocked_level = maxi(1, mini(unlocked_level - (1 if unlocked_level > 3 else 0), TOTAL_LEVELS))
+
+
+## 旧存档（v4）→ 新编号（v5）：
+##   · 原第 5~10 关已删掉，它们的成绩一并丢弃；
+##   · 原第 11 关「终章：元素城堡」接成第 5 关。
+## 1~4 关编号不变，所以解锁进度只压不超过 5（新档的"下一关"最多就是第 5 关）。
+func _migrate_v4_to_v5() -> void:
+	const RECORD_MAP := {
+		1: 1, 2: 2, 3: 3, 4: 4, 11: 5,
+	}
+	best_times = _map_level_keys(best_times, RECORD_MAP)
+	best_coins = _map_level_keys(best_coins, RECORD_MAP)
+	coin_totals = _map_level_keys(coin_totals, RECORD_MAP)
+	unlocked_level = mini(unlocked_level, TOTAL_LEVELS)
 
 
 ## 按映射表搬运字典里的关号键；没有映射的键（例如被合并掉的第 1、2 关）就丢弃。
